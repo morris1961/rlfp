@@ -183,6 +183,7 @@ class LinearSchedule(object):
 def load_config():
     parser = argparse.ArgumentParser()
     parser.add_argument("config_file", help="path to config file")
+    parser.add_argument("data_path", help="path to alfworld data")
     parser.add_argument("-p", "--params", nargs="+", metavar="my.setting=value", default=[],
                         help="override params of the config file,"
                              " e.g. -p 'training.gamma=0.95'")
@@ -190,6 +191,15 @@ def load_config():
     assert os.path.exists(args.config_file), "Invalid config file"
     with open(args.config_file) as reader:
         config = yaml.safe_load(reader)
+
+    # deal with $ALFWORLD_DATA
+    config['dataset']['data_path'] = os.path.join(args.data_path, config['dataset']['data_path'])
+    config['dataset']['eval_id_data_path'] = os.path.join(args.data_path, config['dataset']['eval_id_data_path'])
+    config['dataset']['eval_ood_data_path'] = os.path.join(args.data_path, config['dataset']['eval_ood_data_path'])
+    config['logic']['domain'] = os.path.join(args.data_path, config['logic']['domain'])
+    config['logic']['grammar'] = os.path.join(args.data_path, config['logic']['grammar'])
+    config['mask_rcnn']['pretrained_model_path'] = os.path.join(args.data_path, config['mask_rcnn']['pretrained_model_path'])
+    
     # Parse overriden params.
     for param in args.params:
         fqn_key, value = param.split("=")
