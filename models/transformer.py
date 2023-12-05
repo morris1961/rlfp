@@ -27,12 +27,13 @@ class CustomNetwork(nn.Module):
     ):
         super().__init__()
 
-        self.policy_net = BertForSequenceClassification.from_pretrained("bert-base-cased", num_labels=3).to(device)
-        self.value_net = BertForSequenceClassification.from_pretrained("bert-base-cased", num_labels=3).to(device)
         # IMPORTANT:
         # Save output dimensions, used to create the distributions
-        self.latent_dim_pi = 3
-        self.latent_dim_vf = 3
+        self.latent_dim_pi = features_dim
+        self.latent_dim_vf = features_dim
+
+        self.policy_net = BertForSequenceClassification.from_pretrained(model_name, num_labels=self.latent_dim_pi).to(device)
+        self.value_net = BertForSequenceClassification.from_pretrained(model_name, num_labels=self.latent_dim_vf).to(device)
 
         # Policy network
         # self.policy_net = nn.Sequential(
