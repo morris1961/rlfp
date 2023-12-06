@@ -46,7 +46,7 @@ if __name__ == "__main__":
     env.seed(myseed)
     random.seed(myseed)
     obs, infos = env.reset()
-    env_name = infos['extra.gamefile'][0].split('/')[3]
+    env_name = infos['extra.gamefile'][0].split('/')[4]
     example = None
     for i in TASK_TYPES:
         task = TASK_TYPES[i]
