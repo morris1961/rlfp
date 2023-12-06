@@ -3,14 +3,15 @@ transformer:
 
 dataset:
   data_path: 'json_2.1.1/train'
-  eval_id_data_path: 'json_2.1.1/valid_seen'    # null/None to disable
-  eval_ood_data_path: 'json_2.1.1/valid_unseen' # null/None to disable
+  eval_id_data_path: 'json_2.1.1/valid_seen'                   # null/None to disable
+  eval_ood_data_path: 'json_2.1.1/valid_unseen'                # null/None to disable
+  example_path: examples
   num_train_games: -1                                          # max training games (<=0 indicates full dataset)
   num_eval_games: -1                                           # max evaluation games (<=0 indicates full dataset)
 
 logic:
-  domain: 'logic/alfred.pddl'                   # PDDL domain file that defines the world dynamics
-  grammar: 'logic/alfred.twl2'                  # Grammar file that defines the text feedbacks
+  domain: 'logic/alfred.pddl'                                  # PDDL domain file that defines the world dynamics
+  grammar: 'logic/alfred.twl2'                                 # Grammar file that defines the text feedbacks
 
 env:
   type: 'AlfredTWEnv'                                          # 'AlfredTWEnv' or 'AlfredThorEnv' or 'AlfredHybrid'

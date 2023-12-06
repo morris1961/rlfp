@@ -31,7 +31,6 @@ class ALFWorldEnv(gym.Env):
         return [seed]
 
     def step(self, action):
-        print(self.LLMs[action])
         obs, scores, dones, infos = self.env.step(self.LLMs[action])
         self.LLMs = np.random.choice(infos['admissible_commands'][0], 3) # get out put from LLMs
         enc_obs = self.tokenize(obs)
@@ -39,15 +38,17 @@ class ALFWorldEnv(gym.Env):
         self.attempt += 1
         if self.attempt >= self.max_attempt:
             dones = True
+        else:
+            dones = dones[0]
         return enc_obs, 0, dones, False, infos
 
     def reset(self, seed=None):
         self.seed(seed=seed)
         obs, infos = self.env.reset()
         self.LLMs = np.random.choice(infos['admissible_commands'][0], 3) # get out put from LLMs
-        enc_obs = self.tokenize(obs)
+        # enc_obs = self.tokenize(obs)
         infos['obs'] = obs
-        return enc_obs, infos
+        return obs, infos
     
     def tokenize(self, obs):
         enc = self.tokenizer(obs[0] + " [SEP] " + self.LLMs[0] + " [SEP] " + self.LLMs[1] + " [SEP] " + self.LLMs[2],

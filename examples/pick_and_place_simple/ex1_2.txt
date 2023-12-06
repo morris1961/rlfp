@@ -1,0 +1,14 @@
+Alfworld: You are in the middle of a room. Looking quickly around you, you see a armchair 1, a coffeetable 1, a garbagecan 1, a sidetable 1, a sofa 1, and a tvstand 1. Your task is to: put a book in sofa.
+Agent: go to sidetable 1
+Alfworld: You arrive at loc 12. On the sidetable 1, you see a book 3, a book 2, a book 1, a box 1, and a remotecontrol 1.
+Agent: take book 3 from sidetable 1
+Alfworld: You pick up the book 3 from the sidetable 1.
+Agent: inventory
+Alfworld: You are carrying: a book 3.
+Agent: go to sofa 1
+Alfworld: You arrive at loc 3. On the sofa 1, you see a laptop 2, and a pillow 1.
+Agent: look
+Alfworld: You are facing the sofa 1. Next to it, you see nothing.
+Agent: put book 3 in/on sofa 1
+Alfworld: You put the book 3 in/on the sofa 1.
+You (Agent) win!!!

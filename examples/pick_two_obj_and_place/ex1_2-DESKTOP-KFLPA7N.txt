@@ -1,0 +1,24 @@
+Alfworld: You are in the middle of a room. Looking quickly around you, you see a coffeetable 1, a diningtable 1, a drawer 4, a drawer 3, a drawer 2, a drawer 1, a dresser 1, a garbagecan 1, a sidetable 2, a sidetable 1, and a sofa 1. Your task is to: put two newspaper in sofa.
+Agent: go to dresser 1
+Alfworld: You arrive at loc 23. On the dresser 1, you see a newspaper 1, a remotecontrol 2, and a television 1.
+Agent: take newspaper 1 from dresser 1
+Alfworld: You pick up the newspaper 1 from the dresser 1.
+Agent: inventory
+Alfworld: You are carrying: a newspaper 1.
+Agent: go to sofa 1
+Alfworld: You arrive at loc 3. On the sofa 1, you see a keychain 3, and a pillow 1.
+Agent: put newspaper 1 in/on sofa 1
+Alfworld: You put the newspaper 1 in/on the sofa 1.
+Agent: look
+Alfworld: You are facing the sofa 1. Next to it, you see nothing.
+Agent: go to coffeetable 1
+Alfworld: You arrive at loc 5. On the coffeetable 1, you see a box 1, a cellphone 2, a newspaper 3, a newspaper 2, and a statue 2.
+Agent: look
+Alfworld: You are facing the coffeetable 1. Next to it, you see nothing.
+Agent: take newspaper 2 from coffeetable 1
+Alfworld: You pick up the newspaper 2 from the coffeetable 1.
+Agent: go to sofa 1
+Alfworld: You arrive at loc 3. On the sofa 1, you see a keychain 3, a newspaper 1, and a pillow 1.
+Agent: put newspaper 2 in/on sofa 1
+Alfworld: You put the newspaper 2 in/on the sofa 1.
+You (Agent) win!!!
