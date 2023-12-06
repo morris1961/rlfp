@@ -5,7 +5,7 @@ import numpy as np
 import alfworld.agents.environment as environment
 import alfworld.agents.modules.generic as generic
 from transformers import BertTokenizer
-
+from utils.reward import Reward_Compute, extract_task
 
 class ALFWorldEnv(gym.Env):
 
@@ -24,6 +24,7 @@ class ALFWorldEnv(gym.Env):
         self.LLMs = []
         self.max_attempt = max_attempt
         self.attempt = 0
+        self.reward_compute = None
         self.reset()
 
     def seed(self, seed=None):
@@ -32,6 +33,7 @@ class ALFWorldEnv(gym.Env):
 
     def step(self, action):
         obs, scores, dones, infos = self.env.step(self.LLMs[action])
+        reward = self.reward_compute.obs_reward(obs[0])
         self.LLMs = np.random.choice(infos['admissible_commands'][0], 3) # get out put from LLMs
         enc_obs = self.tokenize(obs)
         infos['obs'] = obs
@@ -40,11 +42,13 @@ class ALFWorldEnv(gym.Env):
             dones = True
         else:
             dones = dones[0]
-        return enc_obs, 0, dones, False, infos
+        return enc_obs, reward, dones, False, infos
 
     def reset(self, seed=None):
         self.seed(seed=seed)
         obs, infos = self.env.reset()
+        task = extract_task(obs[0])
+        self.reward_compute = Reward_Compute(task=task)
         self.LLMs = np.random.choice(infos['admissible_commands'][0], 3) # get out put from LLMs
         # enc_obs = self.tokenize(obs)
         infos['obs'] = obs

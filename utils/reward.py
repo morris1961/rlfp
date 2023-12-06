@@ -10,6 +10,10 @@ target_tag = ['PNOUN', 'NOUN', 'PROPN']
 task = 'examine an alarmclock with the desklamp.'
 weight = 1
 
+def extract_task(origin_input):
+    part_task = origin_input.split('\n')[-1].split(':')[-1]
+    return part_task
+
 class Reward_Compute:
     def __init__(self, task):
       self.task_noun_list = self.NounOfSentence(task)
@@ -43,7 +47,7 @@ class Reward_Compute:
         raw_score = len(inter) / len(task_list)
         return weight * raw_score
 
-    def reward_func(self, obs):
+    def obs_reward(self, obs):
         task_noun_list = self.task_noun_list
         obs_noun_list = self.NounOfSentence(obs)
         # print(task_noun_list)
@@ -57,12 +61,12 @@ if __name__=='__main__':
 
     print()
     obs = 'You arrive at loc 8. On the desk 1, you see a pen 1, a bowl 1, a alarmclock 2, a pencil 2, a pencil 3, a creditcard 3, a book 1, a alarmclock 3, a keychain 3, and a book 2.'
-    reward = reward_compute.reward_func(obs=obs)
+    reward = reward_compute.obs_reward(obs=obs)
     print(f'Obs: {obs}')
     print(reward)
 
     print()
     obs = 'You arrive at loc 1. On the sidetable 2, you see a desklamp 1, and an alarmclock 1.'
-    reward = reward_compute.reward_func(obs=obs)
+    reward = reward_compute.obs_reward(obs=obs)
     print(f'Obs: {obs}')
     print(reward)
