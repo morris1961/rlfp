@@ -5,7 +5,7 @@ import numpy as np
 import alfworld.agents.environment as environment
 import alfworld.agents.modules.generic as generic
 from transformers import BertTokenizer
-from utils.reward import Reward_Compute, extract_task
+from utils import get_answer, Reward_Compute, extract_task
 
 class ALFWorldEnv(gym.Env):
 
@@ -34,7 +34,7 @@ class ALFWorldEnv(gym.Env):
     def step(self, action):
         obs, scores, dones, infos = self.env.step(self.LLMs[action])
         reward = self.reward_compute.obs_reward(obs[0])
-        self.LLMs = np.random.choice(infos['admissible_commands'][0], 3) # get out put from LLMs
+        # self.LLMs = np.random.choice(infos['admissible_commands'][0], 3) # get out put from LLMs
         enc_obs = self.tokenize(obs)
         infos['obs'] = obs
         self.attempt += 1
@@ -49,7 +49,7 @@ class ALFWorldEnv(gym.Env):
         obs, infos = self.env.reset()
         task = extract_task(obs[0])
         self.reward_compute = Reward_Compute(task=task)
-        self.LLMs = np.random.choice(infos['admissible_commands'][0], 3) # get out put from LLMs
+        # self.LLMs = np.random.choice(infos['admissible_commands'][0], 3) # get out put from LLMs
         # enc_obs = self.tokenize(obs)
         infos['obs'] = obs
         return obs, infos
@@ -65,3 +65,6 @@ class ALFWorldEnv(gym.Env):
             'attention_mask':enc['attention_mask'],
         }
         return new_obs
+    
+    def get_llm_answer(self, prompt):
+        self.LLMs = get_answer(prompt)
