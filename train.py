@@ -5,7 +5,8 @@ from models import CustomExtractor
 
 if __name__ == "__main__":
 
-    env = ALFWorldEnv(10)
+    env = ALFWorldEnv(100)
+    print(f"task in this environment: {env.task}")
     
     model = A2C(
         CustomActorCriticPolicy,
