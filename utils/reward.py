@@ -10,12 +10,9 @@ target_tag = ['PNOUN', 'NOUN', 'PROPN']
 task = 'examine an alarmclock with the desklamp.'
 weight = 1
 
-def extract_task(origin_input):
-    part_task = origin_input.split('\n')[-1].split(':')[-1]
-    return part_task
-
 class Reward_Compute:
-    def __init__(self, task):
+    def __init__(self, obs):
+      task = obs.split('\n')[-1].split(':')[-1]
       self.task_noun_list = self.NounOfSentence(task)
     
     def NounOfSentence(self, sentence, show_all=False):

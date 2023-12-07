@@ -22,7 +22,6 @@ class CustomNetwork(nn.Module):
     def __init__(
         self,
         features_dim,
-        device,
         model_name="bert-base-cased",
     ):
         super().__init__()
@@ -32,8 +31,8 @@ class CustomNetwork(nn.Module):
         self.latent_dim_pi = features_dim
         self.latent_dim_vf = features_dim
 
-        self.policy_net = BertForSequenceClassification.from_pretrained(model_name, num_labels=self.latent_dim_pi).to(device)
-        self.value_net = BertForSequenceClassification.from_pretrained(model_name, num_labels=self.latent_dim_vf).to(device)
+        self.policy_net = BertForSequenceClassification.from_pretrained(model_name, num_labels=self.latent_dim_pi)
+        self.value_net = BertForSequenceClassification.from_pretrained(model_name, num_labels=self.latent_dim_vf)
 
         # Policy network
         # self.policy_net = nn.Sequential(
@@ -79,7 +78,8 @@ class CustomActorCriticPolicy(ActorCriticPolicy):
             *args,
             **kwargs,
         )
+        print(kwargs)
 
 
     def _build_mlp_extractor(self) -> None:
-        self.mlp_extractor = CustomNetwork(self.features_dim, self.device)
+        self.mlp_extractor = CustomNetwork(self.features_dim)
