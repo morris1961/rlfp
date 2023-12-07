@@ -10,6 +10,12 @@ export OPENAI_API_KEY="['key', 'key', 'key', ...]"
 export PALM_API_KEY='key'
 ```
 
+# Datapath
+```bash
+export ALFWORLD_DATA=<storage_path>
+alfworld-download # do only the first time to download dataset to <storage_path>
+```
+
 # Quickstart
 - `config_file_path` : file path of *base_config.yaml*, e.g., *base_config.yaml*
 
