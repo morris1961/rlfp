@@ -46,7 +46,7 @@ if __name__ == "__main__":
     env.seed(myseed)
     random.seed(myseed)
     obs, infos = env.reset()
-    env_name = infos['extra.gamefile'][0].split('/')[4]
+    env_name = infos['extra.gamefile'][0].split('/')[-3]
     example = None
     for i in TASK_TYPES:
         task = TASK_TYPES[i]
@@ -58,8 +58,12 @@ if __name__ == "__main__":
             break
 
     prompt = [obs[0] + '\n\nHere is an example, you are Agent:\n' + example]
-    enc_obs = env.tokenize(prompt)
+    env.get_llm_answer(prompt[0])
+    enc_obs = env.tokenize(prompt)    
     while not done:
         action, _state = model.predict(enc_obs, deterministic=True)
-        enc_obs, reward, done, _, infos = env.step(action)
+        enc_obs, reward, done, _, infos = env.step(action[0])
+        print('> ' + env.LLMs[action[0]])
+        prompt[0] += env.LLMs[action[0]] + '\n' + infos['obs'][0] + '\n'
+        env.get_llm_answer(prompt[0])
         print(infos['obs'][0])

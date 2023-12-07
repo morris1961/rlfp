@@ -1,1 +1,3 @@
 stable-baselines3
+openai
+google-generativeai
