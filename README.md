@@ -2,13 +2,14 @@
 Follow the [instruction](https://hackmd.io/c7W5omRvToCPP6SjBLtKrA) to install [alfworld](https://github.com/alfworld/alfworld) in python3.10
 
 # Dependencies
+1. install dependencies and spacy
 ```bash
-    pip install -r requirements.txt
-    # install spacy dependency
-    python -m spacy download en_core_web_sm
+pip install -r requirements.txt
+# install spacy dependency
+python -m spacy download en_core_web_sm
 ```
-Set the environment variable `OPENAI_API_KEY` with your OpenAI API key and `PALM_API_KEY` with your PALM API key.
-- Get PALM API key: [link](https://makersuite.google.com/app/apikey)
+2. Set the environment variable `OPENAI_API_KEY` with your OpenAI API key and `PALM_API_KEY` with your PALM API key.
+    - Get PALM API key: [link](https://makersuite.google.com/app/apikey)
 
 ```bash
 export OPENAI_API_KEY="['key', 'key', 'key', ...]"
