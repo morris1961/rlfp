@@ -18,13 +18,18 @@ TASK_TYPES = {
     6: "pick_two_obj_and_place"
 }
 
-INIT_PROMPT = '''
-Interact with a household to solve a task. Imagine you are an intelligent agent in a household environment and your target is to perform actions to complete the task goal. At the beginning of your interactions, you will be given the detailed description of the current environment and your goal to accomplish. For each of your turn, you will be given a list of actions which you can choose one to perform in this turn. You should choose from two actions: \"THOUGHT \" or \"ACTION\". If you choose \"THOUGHT\", you should first think about the current condition and plan for your future actions, and then output your action in this turn. Your output must strictly follow this format:\"THOUGHT: your thoughts.\n ACTION: your next action\n\"; If you choose \"ACTION\", you should directly output the action in this turn. Your output must strictly follow this format:\"ACTION: your next action\n\". After your each turn, the environment will give you immediate feedback based on which you plan your next few steps. if the environment output \"Nothing happened\", that means the previous action is invalid and you should try more options.
-Reminder:
-1. the action must be chosen from the given available actions. Any actions except provided available actions will be regarded as illegal.
-2. Think when necessary, try to act directly more in the process.
+# modification
+# THOUGHT: nothing changed
+# ACTION: remove "ACTION:"
+# Add rule 3 for output format
 
-Here is an example, you are Agent:
+INIT_PROMPT = '''
+Interact with a household to solve a task. Imagine you are an intelligent agent in a household environment and your target is to perform actions to complete the task goal. At the beginning of your interactions, you will be given the detailed description of the current environment and your goal to accomplish. For each of your turn, you will be given a list of actions which you can choose one to perform in this turn. You should choose from two actions: \"THOUGHT \" or \"ACTION\". If you choose \"THOUGHT\", you should first think about the current condition and plan for your future actions, and then output your action in this turn. Your output must strictly follow this format:\"THOUGHT: your thoughts.\nAction: your next action\n\"; If you choose \"ACTION\", you should directly output the action in this turn. Your output must strictly follow this format:\"your next action\n\". After your each turn, the environment will give you immediate feedback based on which you plan your next few steps. if the environment output \"Nothing happened\", that means the previous action is invalid and you should try more options.
+Reminder:
+1. The action must be chosen from the given available actions. Any actions except provided available actions will be regarded as illegal.
+2. Think when necessary, try to act directly more in the process.
+3. You are the Agent in following examples and your answer should not start with "ACTION:" or "Agnet:".\n
+Here is an example:\n
 '''
 class ALFWorldEnv(gym.Env):
 
@@ -43,6 +48,8 @@ class ALFWorldEnv(gym.Env):
         self.LLMs = []
         self.max_attempt = max_attempt
         self.attempt = 0
+        self.history = None
+        self.task = None
         self.reward_compute = None
         self.reset()
 
@@ -52,41 +59,51 @@ class ALFWorldEnv(gym.Env):
         return [seed]
 
     def step(self, action):
-        print(self.LLMs[action])
-        obs, _, dones, infos = self.env.step([self.LLMs[action]])
-        reward = self.reward_compute.obs_reward(obs[0])
-        self.get_llm_answer(obs[0])
-        if len(self.LLMs) == 0:
-            self.LLMs = np.random.choice(infos['admissible_commands'][0], 3) # get out put from LLMs
-        enc_obs = self.tokenize(obs)
-        infos['obs'] = obs
-        self.attempt += 1
-        if self.attempt >= self.max_attempt:
-            dones = True
+        print(f"attempt: {self.attempt}, action: {self.LLMs[action]}")
+        if "THOUGHT:" in self.LLMs[action]:
+            obs = ['OK']
+            self.history += self.LLMs[action] + '\n' + obs[0] + '\n'
+            infos['obs'] = obs
+            enc_obs = self.tokenize(obs)
+            dones = self.attempt >= self.max_attempt
+            return enc_obs, reward, dones, False, infos
         else:
-            dones = dones[0]
-        return enc_obs, reward, dones, False, infos
+            obs, _, dones, infos = self.env.step([self.LLMs[action]])
+            self.history += self.LLMs[action] + '\n' + obs[0] + '\n'
+            reward = self.reward_compute.obs_reward(obs[0])
+            self.get_llm_answer(self.history)
+            # if len(self.LLMs) == 0:
+            #     self.LLMs = np.random.choice(infos['admissible_commands'][0], 3) # get out put from LLMs
+            enc_obs = self.tokenize(obs)
+            infos['obs'] = obs
+            self.attempt += 1
+            if self.attempt >= self.max_attempt:
+                dones = True
+            else:
+                dones = dones[0]
+            return enc_obs, reward, dones, False, infos
 
     def reset(self, seed=None):
         self.seed(seed=seed)
         obs, infos = self.env.reset()
         self.reward_compute = Reward_Compute(obs[0])
 
-        ## reset LLM?
-        ## first time tell LLM what to do
-        self.get_llm_answer(INIT_PROMPT + self.get_example(infos))
-        ## now get the real answer
-        self.get_llm_answer(obs[0])
-        
+        # first time tell LLM what to do
+        self.get_llm_answer(INIT_PROMPT + self.get_example(infos) + obs[0] + '\n')
+        self.history = INIT_PROMPT + self.get_example(infos) + '\nAnd now is your turn:\n' + obs[0] + '\n'
+
         if len(self.LLMs) == 0:
             self.LLMs = np.random.choice(infos['admissible_commands'][0], 3) # get out put from LLMs
 
-        enc_obs = self.tokenize(obs)
-        infos['obs'] = obs
+        self.task = obs[0].split('\n')[-1].split(':')[-1].strip(' ')
+        obs_text = ['\n'.join(obs[0].split('\n')[:-1])]
+        enc_obs = self.tokenize(obs_text)
+        infos['obs'] = obs_text
+        infos['task'] = self.task
         return enc_obs, infos
     
     def tokenize(self, obs):
-        enc = self.tokenizer(obs[0] + " [SEP] " + self.LLMs[0] + " [SEP] " + self.LLMs[1] + " [SEP] " + self.LLMs[2],
+        enc = self.tokenizer(obs[0] + " [SEP] " + self.task + "[SEP]" + self.LLMs[0] + " [SEP] " + self.LLMs[1] + " [SEP] " + self.LLMs[2],
                             padding="max_length",
                             max_length=self.tokenizer.model_max_length,
                             return_tensors='np')

@@ -14,7 +14,6 @@ if __name__ == "__main__":
         policy_kwargs={
             "features_extractor_class":CustomExtractor,
         }
-
     )
 
     model.learn(
@@ -26,11 +25,11 @@ if __name__ == "__main__":
         # ),
     )
 
+    # inference
     myseed = 0
     done = False
     enc_obs, infos = env.reset(myseed)
-
     while not done:
         action, _state = model.predict(enc_obs, deterministic=True)
         enc_obs, reward, done, _, infos = env.step(action[0])
-        print(infos['obs'][0])
+        print(f"observation: {infos['obs'][0]}")
