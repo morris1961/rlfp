@@ -2,3 +2,4 @@ stable-baselines3
 openai
 google-generativeai
 spacy
+google-cloud-aiplatform

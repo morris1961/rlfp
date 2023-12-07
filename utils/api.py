@@ -1,6 +1,7 @@
 import os
 from openai import OpenAI
 import google.generativeai as palm
+from vertexai.preview.language_models import TextGenerationModel
 
 # OPENAI
 # export OPENAI_API_KEY='["key", "key", "key", "key"]'
@@ -14,21 +15,34 @@ palm_model = models[0].name
 settings = {1: 4, 2: 4, 3: 4, 4: 4, 5: 4, 6: 4} # set all 6 categories to block none
 
 def llm(prompt, stop=["\n"], model="gpt-3.5", max_tokens=100, temperature=0.0, top_p=1.0):
+    messages = [
+        {
+            "role": "user",
+            "content": prompt
+        }
+    ]
     if model == "gpt-3.5":
         global request_times
         request_times += 1
-        messages = [
-            {
-                "role": "user",
-                "content": prompt
-            }
-        ]
         client = OpenAI(
             api_key=openai_api_keys[request_times % len_keys],
             base_url='https://api.chatanywhere.cn/v1',
         )
         response = client.chat.completions.create(
             model='gpt-3.5-turbo',
+            messages=messages,
+            max_tokens=max_tokens,
+            stop=stop,
+            temperature=temperature,
+        )
+        return response.choices[0].message.content
+    elif model == "llama2":
+        client = OpenAI(
+            api_key="key",
+            base_url="http://localhost:5000/v1"
+        )
+        response = client.chat.completions.create(
+            model='llama2',
             messages=messages,
             max_tokens=max_tokens,
             stop=stop,
@@ -46,6 +60,16 @@ def llm(prompt, stop=["\n"], model="gpt-3.5", max_tokens=100, temperature=0.0, t
             top_p=top_p,
         )
         return completion.result
+    elif model == "bard2":
+        model = TextGenerationModel.from_pretrained("text-bison@002")
+        response = model.predict(
+            prompt,
+            temperature=temperature,
+            max_output_tokens=max_tokens,
+            stop_sequences=stop,
+            top_p=top_p,
+        )
+        return response.text
     
 def get_answer(prompt):
     for i in range(5):
@@ -63,6 +87,8 @@ def get_answer(prompt):
 
 if __name__ == "__main__":
     prompt = "Agent: go to the kitchen and pick up the apple. Then go to the bedroom and put it on the bed.\n\nHere is an example, you are Agent:\n\n"
+    print(llm(prompt, model="llama2"))
     print(llm(prompt, model="gpt-3.5"))
     print(llm(prompt, model="bard"))
+    print(llm(prompt, model="bard2"))
     print(get_answer(prompt))
