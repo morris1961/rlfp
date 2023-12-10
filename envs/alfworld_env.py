@@ -22,18 +22,17 @@ TASK_TYPES = {
 # modification
 # Add rule 3 for output format
 
-INIT_PROMPT = '''
-Interact with a household to solve a task. Imagine you are an intelligent agent in a household environment and your target is to perform actions to complete the task goal. At the beginning of your interactions, you will be given the detailed description of the current environment and your goal to accomplish. For each of your turn, you will be given a list of actions which you can choose one to perform in this turn. You have two choice:
-1. Directly output the action in this turn. Output format:\"your next action\n\". 
-2. You should first think about the current condition and plan for your future actions, and then output your action in this turn. Output format:\"THOUGHT: your thoughts. Action: your next action\n\". 
-After your each turn, the environment will give you immediate feedback based on which you plan your next few steps. If the environment output \"Nothing happened\", that means the previous action is invalid and you should try more options; if the environment output \"OK\", that means you did not do anything to the environment. You have better do action in next step.
+INIT_PROMPT = '''Interact with a household to solve a task. Imagine you are an intelligent agent in a household environment and your target is to perform actions to complete the task goal. At the beginning of your interactions, you will be given the detailed description of the current environment and your goal to accomplish. For each of your turn, you will be given a list of actions which you can choose one to perform in this turn. You have two choice:
+1. Directly output the action in this turn. Output format: Your next action. 
+2. You should first think about the current condition and plan for your future actions, and then output your action in this turn. Output format: THOUGHT: Your thoughts. 
+After each turn, the environment will give you immediate feedback based on which you plan your next few steps. If the environment output \"Nothing happened\", that means the previous action is invalid and you should try more options; if the environment output \"OK\", that means you did not do anything to the environment. You have better do action in next step.
 
-Rule:
-1. The action must be chosen from the given available actions. Any actions except provided available actions will be regarded as illegal.
-2. Think when necessary, try to act directly more in the process.
-3. Your answer do not start with "ACTION:" or "Agent:".\n
 Here is an example:\n
 '''
+# Rule:
+# 1. The action must be chosen from the given available actions. Any actions except provided available actions will be regarded as illegal.
+# 2. Think when necessary, try to act directly more in the process.
+# 3. Your answer do not start with "Agent:".\n
 class ALFWorldEnv(gym.Env):
 
     def __init__(self, max_attempt) -> None:
@@ -54,7 +53,7 @@ class ALFWorldEnv(gym.Env):
         self.history = None
         self.task = None
         self.reward_compute = None
-        self.reset()
+        # self.reset()
 
     def seed(self, seed=None):
         self.np_random, seed = seeding.np_random(seed)
@@ -65,7 +64,7 @@ class ALFWorldEnv(gym.Env):
         print(f"attempt: {self.attempt}, a: {self.LLMs[action]}")
         self.attempt += 1
         if "THOUGHT:" in self.LLMs[action]:
-            obs = ['OK']
+            obs = ['OK.']
             infos = {}
             self.history += self.LLMs[action] + '\n' + obs[0] + '\n'
             infos['obs'] = obs
@@ -97,6 +96,7 @@ class ALFWorldEnv(gym.Env):
             return enc_obs, reward, dones, False, infos
 
     def reset(self, seed=None):
+        print("reset happened")
         self.seed(seed=seed)
         obs, infos = self.env.reset()
         self.task = obs[0].split('\n')[-1].split(':')[-1].strip(' ')
@@ -104,8 +104,8 @@ class ALFWorldEnv(gym.Env):
 
         # first time tell LLM what to do
         ex1, ex2 = self.get_example(infos)
-        self.get_llm_answer(INIT_PROMPT + ex1 + '\n' + ex2 + '\nAnd now is your turn:\n' + obs[0] + '\n')
-        self.history = INIT_PROMPT + ex1 + '\n' + ex2 + '\nAnd now is your turn:\n' + obs[0] + '\n'
+        self.get_llm_answer(INIT_PROMPT + ex1 + '\nAnd now is your turn:\n' + obs[0] + '\n')
+        self.history = INIT_PROMPT + ex1 + '\nAnd now is your turn:\n' + obs[0] + '\n'
 
         # if len(self.LLMs) == 0:
         #     self.LLMs = np.random.choice(infos['admissible_commands'][0], 3) # get out put from LLMs
