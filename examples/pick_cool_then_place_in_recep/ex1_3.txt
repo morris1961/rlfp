@@ -1,0 +1,40 @@
+Alfworld: You are in the middle of a room. Looking quickly around you, you see a cabinet 9, a cabinet 8, a cabinet 7, a cabinet 6, a cabinet 5, a cabinet 4, a cabinet 3, a cabinet 2, a cabinet 1, a coffeemachine 1, a countertop 3, a countertop 2, a countertop 1, a drawer 9, a drawer 8, a drawer 7, a drawer 6, a drawer 5, a drawer 4, a drawer 3, a drawer 2, a drawer 1, a fridge 1, a garbagecan 1, a microwave 1, a shelf 3, a shelf 2, a shelf 1, a sinkbasin 1, a stoveburner 4, a stoveburner 3, a stoveburner 2, a stoveburner 1, and a toaster 1. Your task is to: cool some cup and put it in shelf.
+Agent: THOUGHT: To solve the task, I need to find and take a cup, then cool it with fridge, then put it in shelf.
+Alfworld: OK.
+Agent: THOUGHT: First I need to find a cup. A cup is more likely to appear in cabinet (1-9), coffeemachine(1), countertop (1-3), drawer (1-9), sinkbasin (1), diningtable (1), fridge (1), garbagecan (1), microwave (1), shelf (1-3), stoveburner (1-4), toaster (1). I can check one by one randomly.
+Alfworld: OK.
+Agent: go to drawer 3
+Alfworld: You arrive at loc 36. The drawer 3 is closed.
+Agent: open drawer 3
+Alfworld: You open the drawer 3. The drawer 3 is open. In it, you see a fork 1.
+Agent: go to stoveburner 1
+Alfworld: You arrive at loc 20. On the stoveburner 1, you see a pot 2.
+Agent: go to stoveburner 4
+Alfworld: You arrive at loc 39. On the stoveburner 4, you see nothing.
+Agent: go to cabinet 8
+Alfworld: You arrive at loc 6. The cabinet 8 is closed.
+Agent: open cabinet 8
+Alfworld: You open the cabinet 8. The cabinet 8 is open. In it, you see a kettle 2, and a vase 2.
+Agent: go to drawer 5
+Alfworld: You arrive at loc 27. The drawer 5 is closed.
+Agent: open drawer 5
+Alfworld: You open the drawer 5. The drawer 5 is open. In it, you see a saltshaker 1.
+Agent: go to shelf 1
+Alfworld: You arrive at loc 25. On the shelf 1, you see a cup 1.
+Agent: THOUGHT: Now I find a cup (1). Next, I need to take it.
+Alfworld: OK.
+Agent: take cup 1 from shelf 1
+Alfworld: You pick up the cup 1 from the shelf 1.
+Agent: THOUGHT: Now I take a cup (1). Next, I need to go to a fridge 1 and cool it.
+Alfworld: OK.
+Agent: go to fridge 1
+Alfworld: You arrive at loc 14. The fridge 1 is closed.
+Agent: cool cup 1 with fridge 1
+Alfworld: You cool the cup 1 using the fridge 1.
+Agent: THOUGHT: Now I cool a cup (1). Next, I need to put it in/on shelf 1.
+Alfworld: OK.
+Agent: go to shelf 1
+Alfworld: You arrive at loc 25. On the shelf 1, you see nothing.
+Agent: put cup 1 in/on shelf 1
+Alfworld: You put the cup 1 in/on the shelf 1.
+You (Agent) win!!!

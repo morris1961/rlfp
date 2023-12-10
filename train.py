@@ -3,6 +3,8 @@ from stable_baselines3 import A2C
 from models import CustomActorCriticPolicy
 from models import CustomExtractor
 
+EPOCH = 1000
+
 if __name__ == "__main__":
 
     env = ALFWorldEnv(100)
@@ -17,14 +19,15 @@ if __name__ == "__main__":
         }
     )
 
-    model.learn(
-        total_timesteps=1000,
-        reset_num_timesteps=False,
-        # callback=WandbCallback(
-        #     gradient_save_freq=100,
-        #     verbose=2,
-        # ),
-    )
+    for i in range(EPOCH):
+        model.learn(
+            total_timesteps=1000,
+            reset_num_timesteps=False,
+            # callback=WandbCallback(
+            #     gradient_save_freq=100,
+            #     verbose=2,
+            # ),
+        )
 
     # inference
     myseed = 0

@@ -1,0 +1,20 @@
+Alfworld: You are in the middle of a room. Looking quickly around you, you see a armchair 1, a coffeetable 1, a garbagecan 1, a sidetable 1, a sofa 1, and a tvstand 1. Your task is to: put a book in sofa.
+Agent: THOUGHT: To solve the task, I need to find and take a book, then put in on sofa.
+Alfworld: OK.
+Agent: THOUGHT: First I need to find a book. A book is more likely to appear in armchair (1), coffeetable (1), garbagecan (1), sidetable (1), sofa (1), tvstand (1). I can check one by one randomly.
+Alfworld: OK.
+Agent: go to tvstand 1
+Alfworld: You arrive at loc 2. On the tvstand 1, you see a laptop 1, a statue 2, a statue 1, a television 1, a watch 3, and a watch 2.
+Agent: go to armchair 1
+Alfworld: You arrive at loc 9. On the armchair 1, you see a book 4.
+Agent: THOUGHT: Now I find a book (4). Next, I need to take it.
+Alfworld: OK.
+Agent: take book 4 from armchair 1
+Alfworld: You pick up the book 4 from the armchair 1.
+Agent: THOUGHT: Now I take a book (4). Next, I need to put it in/on sofa 1.
+Alfworld: OK.
+Agent: go to sofa 1
+Alfworld: You arrive at loc 3. On the sofa 1, you see a laptop 2, and a pillow 1.
+Agent: put book 4 in/on sofa 1
+Alfworld: You put the book 4 in/on the sofa 1.
+You (Agent) win!!!

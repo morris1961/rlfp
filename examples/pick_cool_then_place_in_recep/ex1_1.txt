@@ -5,8 +5,6 @@ Agent: take cup 1 from shelf 1
 Alfworld: You pick up the cup 1 from the shelf 1.
 Agent: go to fridge 1
 Alfworld: You arrive at loc 14. The fridge 1 is closed.
-Agent: open fridge 1
-Alfworld: You open the fridge 1. The fridge 1 is open. In it, you see a egg 1, a plate 2, a plate 1, and a tomato 1.
 Agent: cool cup 1 with fridge 1
 Alfworld: You cool the cup 1 using the fridge 1.
 Agent: go to shelf 1
