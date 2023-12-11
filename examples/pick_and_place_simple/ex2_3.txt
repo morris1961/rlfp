@@ -1,26 +1,26 @@
 Alfworld: You are in the middle of a room. Looking quickly around you, you see a armchair 1, a bed 1, a drawer 16, a drawer 15, a drawer 14, a drawer 13, a drawer 12, a drawer 11, a drawer 10, a drawer 9, a drawer 8, a drawer 7, a drawer 6, a drawer 5, a drawer 4, a drawer 3, a drawer 2, a drawer 1, a dresser 2, a dresser 1, a garbagecan 1, a shelf 2, a shelf 1, a sidetable 2, and a sidetable 1. Your task is to: put some cellphone on dresser.
 Agent: THOUGHT: To solve the task, I need to find and take a cellphone, then put in on dresser.
 Alfworld: OK.
-Agent: THOUGHT: First I need to find a cellphone. A cellphone is more likely to appear in armchair (1), bed (1), drawer (1-16), dresser (1-2), garbagecan (1), shelf (1-2), sidetable(1-2). I can check one by one randomly.
+Agent: THOUGHT: First I need to find a cellphone. A cellphone is more likely to appear in armchair (1), bed (1), drawer (1-16), dresser (1-2), garbagecan (1), shelf (1-2), sidetable (1-2). I can check one by one randomly.
 Alfworld: OK.
 Agent: go to drawer 12
-Alfworld: You arrive at loc 18. The drawer 12 is closed.
+Alfworld: The drawer 12 is closed.
 Agent: open drawer 12
 Alfworld: You open the drawer 12. The drawer 12 is open. In it, you see nothing.
 Agent: go to drawer 7
-Alfworld: You arrive at loc 17. The drawer 7 is closed.
+Alfworld: The drawer 7 is closed.
 Agent: open drawer 7
 Alfworld: You open the drawer 7. The drawer 7 is open. In it, you see nothing.
 Agent: go to shelf 1
-Alfworld: You arrive at loc 6. On the shelf 1, you see a alarmclock 1, a bowl 1, and a vase 3.
+Alfworld: On the shelf 1, you see a alarmclock 1, a bowl 1, and a vase 3.
 Agent: go to dresser 2
-Alfworld: You arrive at loc 9. On the dresser 2, you see a creditcard 2, a houseplant 1, a keychain 3, a laptop 1, a mirror 1, a pen 1, and a vase 2.
+Alfworld: On the dresser 2, you see a creditcard 2, a houseplant 1, a keychain 3, a laptop 1, a mirror 1, a pen 1, and a vase 2.
 Agent: go to drawer 1
-Alfworld: You arrive at loc 23. The drawer 1 is closed.
+Alfworld: The drawer 1 is closed.
 Agent: open drawer 1
 Alfworld: You open the drawer 1. The drawer 1 is open. In it, you see nothing.
 Agent: go to armchair 1
-Alfworld: You arrive at loc 25. On the armchair 1, you see a cellphone 1, and a creditcard 1.
+Alfworld: On the armchair 1, you see a cellphone 1, and a creditcard 1.
 Agent: THOUGHT: Now I find a cellphone (1). Next, I need to take it.
 Alfworld: OK.
 Agent: take cellphone 1 from armchair 1
@@ -28,7 +28,7 @@ Alfworld: You pick up the cellphone 1 from the armchair 1.
 Agent: THOUGHT: Now I take a cellphone (1). Next, I need to put it in/on dresser 1.
 Alfworld: OK.
 Agent: go to dresser 1
-Alfworld: You arrive at loc 3. On the dresser 1, you see nothing.
+Alfworld: On the dresser 1, you see nothing.
 Agent: put cellphone 1 in/on dresser 1
 Alfworld: You put the cellphone 1 in/on the dresser 1.
 You (Agent) win!!!
