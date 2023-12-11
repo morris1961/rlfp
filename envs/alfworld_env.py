@@ -11,7 +11,8 @@ from transformers import AutoTokenizer
 from utils import get_answer, Reward_Compute
 from utils import LLM_SIZE
 
-FETURE_DIM = 100
+FEATURE_DIM = 256
+THOUGHT_PENALTY = -0.1
 TASK_TYPES = {
     1: "pick_and_place_simple",
     2: "look_at_obj_in_light",
@@ -26,7 +27,7 @@ TASK_TYPES = {
 
 INIT_PROMPT = '''Interact with a household to solve a task. Imagine you are an intelligent agent in a household environment and your target is to perform actions to complete the task goal. At the beginning of your interactions, you will be given the detailed description of the current environment and your goal to accomplish. For each of your turn, you will be given a list of actions which you can choose one to perform in this turn. You have two choice:
 1. Directly output the action in this turn. Output format: Your next action. 
-2. You should first think about the current condition and plan for your future actions, and then output your action in this turn. Output format: THOUGHT: Your thoughts.
+2. You should first think about the current condition and plan for your future actions, and then output your action in this turn. Output format: THOUGHT: Your thoughts. Reminder: The more times you think, the more penalty you retrieve.
 After each turn, the environment will give you immediate feedback based on which you plan your next few steps. If the environment output \"Nothing happened.\", that means the previous action is invalid and you should try more options; if the environment output \"OK.\", that means you did not do anything to the environment. You have better do action in next step. Last but not least, your output cannot contain \"Agent: \".
 
 Here is an example:\n
@@ -43,14 +44,15 @@ class ALFWorldEnv(gym.Env):
         self.tokenizer = AutoTokenizer.from_pretrained(self.config['transformer']['model'], use_fast=True)
 
         self.action_space = spaces.Discrete(LLM_SIZE)
-        self.observation_space = spaces.Dict({"input_ids": spaces.Box(low=0, high=self.tokenizer.vocab_size, shape=(LLM_SIZE, FETURE_DIM,), dtype=int),
-                                              "token_type_ids": spaces.Box(low=0, high=1, shape=(LLM_SIZE, FETURE_DIM,), dtype=int),
-                                              "attention_mask": spaces.Box(low=0, high=1, shape=(LLM_SIZE, FETURE_DIM,), dtype=int),})
+        self.observation_space = spaces.Dict({"input_ids": spaces.Box(low=0, high=self.tokenizer.vocab_size, shape=(LLM_SIZE, FEATURE_DIM), dtype=int),
+                                              "token_type_ids": spaces.Box(low=0, high=1, shape=(LLM_SIZE, FEATURE_DIM), dtype=int),
+                                              "attention_mask": spaces.Box(low=0, high=1, shape=(LLM_SIZE, FEATURE_DIM), dtype=int),})
         self.env = getattr(environment, env_type)(self.config, train_eval='train')
         self.env = self.env.init_env(batch_size=1)
         self.LLMs = []
         self.max_attempt = max_attempt
         self.attempt = 0
+        self.thought = 0
         self.history = None
         self.task = None
         self.reward_compute = None
@@ -63,50 +65,44 @@ class ALFWorldEnv(gym.Env):
         return [seed]
 
     def step(self, action):
-        print(f"action: {self.LLM_model_name[action]}, {self.LLMs[action]}")
-        # print(f"LLM outputs: {self.LLMs}")
-        # print(f"attempt: {self.attempt}, a: {self.LLMs[action]}\n")
+        print(f"action {self.attempt}: {self.LLM_model_name[action]}, {self.LLMs[action]}")
         self.attempt += 1
         if "THOUGHT:" in self.LLMs[action]:
+            self.thought += 1
             obs = ['OK.']
             print(f"observation: {obs[0]}")
             infos = {}
             self.history += self.LLMs[action] + '\n' + obs[0] + '\n'
             infos['obs'] = obs
 
-            
             # can remove this part
-            # time.sleep(1)
+            time.sleep(1)
             
             self.get_llm_answer()
             enc_obs = self.tokenize(obs)
             dones = self.attempt >= self.max_attempt
-            print("reward", -1)
-            return enc_obs, -1, dones, False, infos
+            return enc_obs, THOUGHT_PENALTY * self.thought, dones, False, infos
         else:
             obs, _, dones, infos = self.env.step([self.LLMs[action]])
-            print(f"observation: {obs[0]}")
             if obs[0].startswith('You arrive at loc '):
                 ob = obs[0][obs[0].find('. ')+2:]
             else:
                 ob = obs[0]
+            print(f"observation: {ob}")
 
             self.history += self.LLMs[action] + '\n' + ob + '\n'
             reward = self.reward_compute.obs_reward(ob)
             
             # can remove this part
-            # time.sleep(1)
+            time.sleep(1)
             
             self.get_llm_answer()
-            # self.LLMs = random.choices(infos['admissible_commands'][0], k=3) # get out put from LLMs
-            
             enc_obs = self.tokenize([ob])
             infos['obs'] = [ob]
             if self.attempt >= self.max_attempt:
                 dones = True
             else:
                 dones = dones[0]
-            print("reward: ", reward, "\n")
             return enc_obs, reward, dones, False, infos
 
     def reset(self, seed=None):
@@ -116,21 +112,14 @@ class ALFWorldEnv(gym.Env):
         print(f"observation: {obs[0]}")
         print(f"task: {self.task}")
 
-        if obs[0].startswith('You arrive at loc '):
-            ob = obs[0][obs[0].find('. ')+2:]
-        else:
-            ob = obs[0]
-
-        self.reward_compute = Reward_Compute(ob)
+        self.reward_compute = Reward_Compute(obs[0])
 
         # first time tell LLM what to do
         ex1 = self.get_example(infos)
-        self.history = INIT_PROMPT + ex1 + '\nAnd now is your turn:\n' + ob + '\n'
+        self.history = INIT_PROMPT + ex1 + '\nAnd now is your turn:\n' + obs[0] + '\n'
         self.get_llm_answer()
 
-        # self.LLMs = random.choices(infos['admissible_commands'][0], k=3) # get out put from LLMs
-
-        obs_text = ['\n'.join(ob.split('\n')[:-1])]
+        obs_text = ['\n'.join(obs[0].split('\n')[:-1])]
         enc_obs = self.tokenize(obs_text)
         infos['obs'] = obs_text
         infos['task'] = self.task
@@ -138,40 +127,41 @@ class ALFWorldEnv(gym.Env):
         return enc_obs, infos
     
     def tokenize(self, obs):
-        # can be commented
-        # if None in self.LLMs:
-        #     print("===========\nNone exists~~\n===========")
-            # self.reset() # this doesn't make sense
-
-        question = [self.task] * LLM_SIZE
+        question = [self.task for _ in range(LLM_SIZE)]
         choices = self.LLMs
-        enc = self.tokenizer(question, choices,
-                            padding="max_length",
-                            max_length=FETURE_DIM,
-                            return_tensors='np'
-                            )
+        enc = self.tokenizer(
+            question,
+            choices,
+            padding="max_length",
+            max_length=FEATURE_DIM,
+            return_tensors='np'
+        )
+        if enc['input_ids'].shape == (3,):
+            print("Bug!!!!")
+            print(question)
+            print(choices)
+            exit()
         return {
-            'input_ids':enc['input_ids'],
-            'token_type_ids':enc['token_type_ids'],
-            'attention_mask':enc['attention_mask'],
+            'input_ids': enc['input_ids'],
+            'token_type_ids': enc['token_type_ids'],
+            'attention_mask': enc['attention_mask'],
         }
     
     def get_llm_answer(self):
         self.LLMs = get_answer(self.history, self.LLM_model_name)
         
         for i, llm in enumerate(self.LLMs):
-            if llm == None:
+            if llm is None or llm == '':
                 print("===========\nNone exists~~\n===========")
-                self.LLMs[i] = "look" # random?
-
-
-        # llama2 output strip
-        if self.LLMs[0].startswith('Agent: '):
-            self.LLMs[0] = self.LLMs[0][self.LLMs[0].find('Agent: ')+7:]
+                self.LLMs[i] = "look"
 
         for i in range(len(self.LLMs)):
             if self.LLMs[i] is not None:
                 self.LLMs[i] = self.LLMs[i].strip(' ')
+
+            # llama2 output strip
+            if self.LLMs[i].startswith('Agent: '):
+                self.LLMs[i] = self.LLMs[i][self.LLMs[i].find('Agent: ')+7:]
 
     def get_example(self, infos):
         env_name = infos['extra.gamefile'][0].split('/')[-3]

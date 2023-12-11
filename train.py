@@ -4,12 +4,14 @@ from models import CustomActorCriticPolicy
 from models import CustomExtractor
 
 EPOCH = 1
-RETRY = 100
+RETRY = 30
 TOTAL_TIMESTAMPS = 1000
+MYSEED = 0
 
 if __name__ == "__main__":
 
     env = ALFWorldEnv(RETRY)
+    env.seed(MYSEED)
     # print(f"task in this environment: {env.task}")
     
     model = A2C(
@@ -33,9 +35,8 @@ if __name__ == "__main__":
         )
 
     # inference
-    myseed = 0
     done = False
-    enc_obs, infos = env.reset(myseed)
+    enc_obs, infos = env.reset(MYSEED)
     while not done:
         action, _state = model.predict(enc_obs, deterministic=True)
         enc_obs, reward, done, _, infos = env.step(action)
