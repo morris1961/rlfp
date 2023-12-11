@@ -1,6 +1,6 @@
 Alfworld: You are in the middle of a room. Looking quickly around you, you see a bed 2, a bed 1, a desk 1, a drawer 11, a drawer 10, a drawer 9, a drawer 8, a drawer 7, a drawer 6, a drawer 5, a drawer 4, a drawer 3, a drawer 2, a drawer 1, a dresser 1, a garbagecan 1, a safe 1, a sidetable 2, and a sidetable 1. Your task is to: look at mug under the desklamp.
 Agent: go to desk 1
-Alfworld: You arrive at loc 14. On the desk 1, you see a bowl 2, a bowl 1, a cd 2, a creditcard 1, a desklamp 1, a keychain 1, and a mug 1.
+Alfworld: On the desk 1, you see a bowl 2, a bowl 1, a cd 2, a creditcard 1, a desklamp 1, a keychain 1, and a mug 1.
 Agent: use desklamp 1
 Alfworld: You turn on the desklamp 1.
 Agent: look

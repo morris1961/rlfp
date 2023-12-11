@@ -26,15 +26,14 @@ TASK_TYPES = {
 
 INIT_PROMPT = '''Interact with a household to solve a task. Imagine you are an intelligent agent in a household environment and your target is to perform actions to complete the task goal. At the beginning of your interactions, you will be given the detailed description of the current environment and your goal to accomplish. For each of your turn, you will be given a list of actions which you can choose one to perform in this turn. You have two choice:
 1. Directly output the action in this turn. Output format: Your next action. 
-2. You should first think about the current condition and plan for your future actions, and then output your action in this turn. Output format: THOUGHT: Your thoughts. 
-After each turn, the environment will give you immediate feedback based on which you plan your next few steps. If the environment output \"Nothing happened\", that means the previous action is invalid and you should try more options; if the environment output \"OK\", that means you did not do anything to the environment. You have better do action in next step.
+2. You should first think about the current condition and plan for your future actions, and then output your action in this turn. Output format: THOUGHT: Your thoughts.
+After each turn, the environment will give you immediate feedback based on which you plan your next few steps. If the environment output \"Nothing happened.\", that means the previous action is invalid and you should try more options; if the environment output \"OK.\", that means you did not do anything to the environment. You have better do action in next step. Last but not least, your output cannot contain \"Agent: \".
 
 Here is an example:\n
 '''
 # Rule:
 # 1. The action must be chosen from the given available actions. Any actions except provided available actions will be regarded as illegal.
 # 2. Think when necessary, try to act directly more in the process.
-# 3. Your answer do not start with "Agent:".\n
 class ALFWorldEnv(gym.Env):
 
     def __init__(self, max_attempt) -> None:
@@ -55,6 +54,7 @@ class ALFWorldEnv(gym.Env):
         self.history = None
         self.task = None
         self.reward_compute = None
+        self.LLM_model_name = ["llama2", "bard", "bard2"]
         # self.reset()
 
     def seed(self, seed=None):
@@ -63,59 +63,74 @@ class ALFWorldEnv(gym.Env):
         return [seed]
 
     def step(self, action):
-        print(f"action: {'random' if action else 'bard'}, {self.LLMs[action]}", end=" ")
+        print(f"action: {self.LLM_model_name[action]}, {self.LLMs[action]}")
         # print(f"LLM outputs: {self.LLMs}")
         # print(f"attempt: {self.attempt}, a: {self.LLMs[action]}\n")
         self.attempt += 1
         if "THOUGHT:" in self.LLMs[action]:
             obs = ['OK.']
+            print(f"observation: {obs[0]}")
             infos = {}
             self.history += self.LLMs[action] + '\n' + obs[0] + '\n'
             infos['obs'] = obs
+
             
             # can remove this part
-            time.sleep(1)
+            # time.sleep(1)
             
-            self.get_llm_answer(self.history)
+            self.get_llm_answer()
             enc_obs = self.tokenize(obs)
             dones = self.attempt >= self.max_attempt
             print("reward", -1)
             return enc_obs, -1, dones, False, infos
         else:
             obs, _, dones, infos = self.env.step([self.LLMs[action]])
-            self.history += self.LLMs[action] + '\n' + obs[0] + '\n'
-            reward = self.reward_compute.obs_reward(obs[0])
+            print(f"observation: {obs[0]}")
+            if obs[0].startswith('You arrive at loc '):
+                ob = obs[0][obs[0].find('. ')+2:]
+            else:
+                ob = obs[0]
+
+            self.history += self.LLMs[action] + '\n' + ob + '\n'
+            reward = self.reward_compute.obs_reward(ob)
             
             # can remove this part
-            time.sleep(1)
+            # time.sleep(1)
             
-            self.get_llm_answer(self.history)
-            # self.LLMs = random.choices(infos['admissible_commands'][0], k=1) # get out put from LLMs
+            self.get_llm_answer()
+            # self.LLMs = random.choices(infos['admissible_commands'][0], k=3) # get out put from LLMs
             
-            enc_obs = self.tokenize(obs)
-            infos['obs'] = obs
+            enc_obs = self.tokenize([ob])
+            infos['obs'] = [ob]
             if self.attempt >= self.max_attempt:
                 dones = True
             else:
                 dones = dones[0]
-            print("reward: ", reward)
+            print("reward: ", reward, "\n")
             return enc_obs, reward, dones, False, infos
 
     def reset(self, seed=None):
-        # print("reset happened")
         self.seed(seed=seed)
         obs, infos = self.env.reset()
         self.task = obs[0].split('\n')[-1].split(':')[-1].strip(' ')
-        self.reward_compute = Reward_Compute(obs[0])
+        print(f"observation: {obs[0]}")
+        print(f"task: {self.task}")
+
+        if obs[0].startswith('You arrive at loc '):
+            ob = obs[0][obs[0].find('. ')+2:]
+        else:
+            ob = obs[0]
+
+        self.reward_compute = Reward_Compute(ob)
 
         # first time tell LLM what to do
-        ex1, ex2 = self.get_example(infos)
-        self.get_llm_answer(INIT_PROMPT + ex1 + '\nAnd now is your turn:\n' + obs[0] + '\n')
-        self.history = INIT_PROMPT + ex1 + '\nAnd now is your turn:\n' + obs[0] + '\n'
+        ex1 = self.get_example(infos)
+        self.history = INIT_PROMPT + ex1 + '\nAnd now is your turn:\n' + ob + '\n'
+        self.get_llm_answer()
 
-        # self.LLMs = random.choices(infos['admissible_commands'][0], k=1) # get out put from LLMs
+        # self.LLMs = random.choices(infos['admissible_commands'][0], k=3) # get out put from LLMs
 
-        obs_text = ['\n'.join(obs[0].split('\n')[:-1])]
+        obs_text = ['\n'.join(ob.split('\n')[:-1])]
         enc_obs = self.tokenize(obs_text)
         infos['obs'] = obs_text
         infos['task'] = self.task
@@ -124,6 +139,10 @@ class ALFWorldEnv(gym.Env):
     
     def tokenize(self, obs):
         # can be commented
+        # if None in self.LLMs:
+        #     print("===========\nNone exists~~\n===========")
+            # self.reset() # this doesn't make sense
+
         question = [self.task] * LLM_SIZE
         choices = self.LLMs
         enc = self.tokenizer(question, choices,
@@ -137,21 +156,33 @@ class ALFWorldEnv(gym.Env):
             'attention_mask':enc['attention_mask'],
         }
     
-    def get_llm_answer(self, prompt):
-        self.LLMs = get_answer(prompt)
+    def get_llm_answer(self):
+        self.LLMs = get_answer(self.history, self.LLM_model_name)
+        
+        for i, llm in enumerate(self.LLMs):
+            if llm == None:
+                print("===========\nNone exists~~\n===========")
+                self.LLMs[i] = "look" # random?
+
+
+        # llama2 output strip
+        if self.LLMs[0].startswith('Agent: '):
+            self.LLMs[0] = self.LLMs[0][self.LLMs[0].find('Agent: ')+7:]
+
+        for i in range(len(self.LLMs)):
+            if self.LLMs[i] is not None:
+                self.LLMs[i] = self.LLMs[i].strip(' ')
 
     def get_example(self, infos):
         env_name = infos['extra.gamefile'][0].split('/')[-3]
         example1 = None
-        example2 = None
         for i in TASK_TYPES:
             task = TASK_TYPES[i]
             if env_name.startswith(task):
-                files = [os.path.join("examples", task, x) for x in os.listdir(os.path.join("examples", task)) if x.endswith(".txt")]
-                ex1, ex2 = random.sample(files, 2)
+                files = [os.path.join("examples", task, x) for x in os.listdir(os.path.join("examples", task)) if x.endswith("_3.txt")]
+                ex1 = random.sample(files, 1)[0]
                 ex_file1 = open(str(ex1), 'r')
                 example1 = ex_file1.read()
-                ex_file2 = open(str(ex2), 'r')
-                example2 = ex_file2.read()
                 break
-        return example1, example2
+
+        return example1

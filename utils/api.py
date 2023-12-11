@@ -1,13 +1,14 @@
 import os
+import requests
 from openai import OpenAI
 import google.generativeai as palm
 from vertexai.preview.language_models import TextGenerationModel
 
 # OPENAI
 # export OPENAI_API_KEY='["key", "key", "key", "key"]'
-openai_api_keys = eval(os.environ['OPENAI_API_KEY'])
-len_keys = len(openai_api_keys)
-request_times = 0
+# openai_api_keys = eval(os.environ['OPENAI_API_KEY'])
+# len_keys = len(openai_api_keys)
+# request_times = 0
 # PALM
 palm.configure(api_key=os.environ['PALM_API_KEY'])
 models = [m for m in palm.list_models() if 'generateText' in m.supported_generation_methods]
@@ -39,18 +40,19 @@ def llm(prompt, stop=["\n"], model="gpt-3.5", max_tokens=100, temperature=0.0, t
         )
         return response.choices[0].message.content
     elif model == "llama2":
-        client = OpenAI(
-            api_key="key",
-            base_url="http://localhost:5000/v1"
-        )
-        response = client.chat.completions.create(
-            model='llama2',
-            messages=messages,
-            max_tokens=max_tokens,
-            stop=stop,
-            temperature=temperature,
-        )
-        return response.choices[0].message.content
+        url = "https://smooth-looking-batteries-dual.trycloudflare.com/v1/chat/completions"
+        headers = {
+            "Content-Type": "application/json"
+        }
+        data = {
+            "mode": "instruct",
+            "messages": messages,
+            "max_tokens": max_tokens,
+            "stop": stop,
+        }
+        response = requests.post(url, headers=headers, json=data, verify=False)
+        assistant_message = response.json()['choices'][0]['message']['content']
+        return assistant_message
     elif model == "bard":
         completion = palm.generate_text(
             model=palm_model,
@@ -73,13 +75,13 @@ def llm(prompt, stop=["\n"], model="gpt-3.5", max_tokens=100, temperature=0.0, t
         )
         return response.text
     
-def get_answer(prompt):
+def get_answer(prompt, LLM_model_name):
     for i in range(5):
         try:
             answers = [
-                llm(prompt, model="bard"), 
-                llm(prompt, model="bard"), 
-                llm(prompt, model="bard")
+                llm(prompt, model=LLM_model_name[0]), 
+                llm(prompt, model=LLM_model_name[1]), 
+                llm(prompt, model=LLM_model_name[2])
             ]
             return answers
         except Exception as e:

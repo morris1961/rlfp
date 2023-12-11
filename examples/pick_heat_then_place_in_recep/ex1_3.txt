@@ -1,20 +1,20 @@
 Alfworld: You are in the middle of a room. Looking quickly around you, you see a cabinet 4, a cabinet 3, a cabinet 2, a cabinet 1, a coffeemachine 1, a countertop 1, a drawer 8, a drawer 7, a drawer 6, a drawer 5, a drawer 4, a drawer 3, a drawer 2, a drawer 1, a fridge 1, a garbagecan 1, a microwave 1, a sidetable 1, a sinkbasin 1, a stoveburner 4, a stoveburner 3, a stoveburner 2, a stoveburner 1, and a toaster 1. Your task is to: heat some egg and put it in sidetable.
 Agent: THOUGHT: To solve the task, I need to find and take an egg, then heat it with microwave, then put it in sidetable.
 Alfworld: OK.
-Agent: THOUGHT: First I need to find an egg. An egg is more likely to appear in cabinet (1-4), coffeemachine (1), drawer (1-8), microwave (1), sidetable(1), sinkbasin(1), fridge (1), countertop (1), stoveburner (1-4), toaster (1), garbagecan (1), cabinet (1-4). I can check one by one randomly.
+Agent: THOUGHT: First I need to find an egg. An egg is more likely to appear in cabinet (1-4), coffeemachine (1), drawer (1-8), microwave (1), sidetable (1), sinkbasin (1), fridge (1), countertop (1), stoveburner (1-4), toaster (1), garbagecan (1), cabinet (1-4). I can check one by one randomly.
 Alfworld: OK.
 Agent: go to stoveburner 3
-Alfworld: You arrive at loc 17. On the stoveburner 3, you see nothing.
+Alfworld: On the stoveburner 3, you see nothing.
 Agent: go to drawer 1
-Alfworld: You arrive at loc 30. The drawer 1 is closed.
+Alfworld: The drawer 1 is closed.
 Agent: open drawer 1
 Alfworld: You open the drawer 1. The drawer 1 is open. In it, you see nothing.
 Agent: go to cabinet 2
-Alfworld: You arrive at loc 14. The cabinet 2 is closed.
+Alfworld: The cabinet 2 is closed.
 Agent: open cabinet 2
 Alfworld: You open the cabinet 2. The cabinet 2 is open. In it, you see a bowl 2.
 Agent: go to countertop 1
-Alfworld: You arrive at loc 8. On the countertop 1, you see a bowl 1, a bread 2, a bread 1, a cup 2, a egg 1, a fork 2, a fork 1, a houseplant 1, a knife 3, a lettuce 3, a lettuce 2, a lettuce 1, a mug 3, a mug 2, a pan 2, a papertowelroll 1, a pot 1, a saltshaker 2, a spatula 3, a spatula 1, a spoon 2, a tomato 3, a tomato 2, and a winebottle 1.
+Alfworld: On the countertop 1, you see a bowl 1, a bread 2, a bread 1, a cup 2, a egg 1, a fork 2, a fork 1, a houseplant 1, a knife 3, a lettuce 3, a lettuce 2, a lettuce 1, a mug 3, a mug 2, a pan 2, a papertowelroll 1, a pot 1, a saltshaker 2, a spatula 3, a spatula 1, a spoon 2, a tomato 3, a tomato 2, and a winebottle 1.
 Agent: THOUGHT: Now I find an egg (1). Next, I need to take it.
 Alfworld: OK.
 Agent: take egg 1 from countertop 1
@@ -22,13 +22,13 @@ Alfworld: You pick up the egg 1 from the countertop 1.
 Agent: THOUGHT: Now I take an egg (1). Next, I need go to a microwave 1 and heat it.
 Alfworld: OK.
 Agent: go to microwave 1
-Alfworld: You arrive at loc 23. The microwave 1 is closed.
+Alfworld: The microwave 1 is closed.
 Agent: heat egg 1 with microwave 1
 Alfworld: You heat the egg 1 using the microwave 1.
 Agent: THOUGHT: Now I heat an egg (1). Next, I need to put it in/on sidetable 1.
 Alfworld: OK.
 Agent: go to sidetable 1
-Alfworld: You arrive at loc 22. On the sidetable 1, you see a saltshaker 1, a spoon 1, and a tomato 1.
+Alfworld: On the sidetable 1, you see a saltshaker 1, a spoon 1, and a tomato 1.
 Agent: put egg 1 in/on sidetable 1
 Alfworld: You put the egg 1 in/on the sidetable 1.
 You (Agent) win!!!

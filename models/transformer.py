@@ -53,13 +53,13 @@ class CustomNetwork(nn.Module):
         return self.forward_actor(features), self.forward_critic(features)
 
     def forward_actor(self, features: th.Tensor) -> th.Tensor:
-        # print("actor", features)
-        x = self.base_network(**features).logits.squeeze(1).unsqueeze(0)
+        # print("actor", features["input_ids"].shape)
+        x = self.base_network(**features).logits
         return self.policy_net(x)
 
     def forward_critic(self, features: th.Tensor) -> th.Tensor:
         # print("critic", features)
-        x = self.base_network(**features).logits.squeeze(1).unsqueeze(0)
+        x = self.base_network(**features).logits
         return self.value_net(x)
 
 
