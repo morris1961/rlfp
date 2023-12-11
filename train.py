@@ -3,12 +3,14 @@ from stable_baselines3 import A2C
 from models import CustomActorCriticPolicy
 from models import CustomExtractor
 
-EPOCH = 1000
+EPOCH = 100
+RETRY = 100
+TOTAL_TIMESTAMPS = 10000
 
 if __name__ == "__main__":
 
-    env = ALFWorldEnv(100)
-    print(f"task in this environment: {env.task}")
+    env = ALFWorldEnv(RETRY)
+    # print(f"task in this environment: {env.task}")
     
     model = A2C(
         CustomActorCriticPolicy,
@@ -19,15 +21,15 @@ if __name__ == "__main__":
         }
     )
 
-    for i in range(EPOCH):
-        model.learn(
-            total_timesteps=1000,
-            reset_num_timesteps=False,
-            # callback=WandbCallback(
-            #     gradient_save_freq=100,
-            #     verbose=2,
-            # ),
-        )
+    # for i in range(EPOCH):
+    model.learn(
+        total_timesteps=TOTAL_TIMESTAMPS,
+        reset_num_timesteps=False,
+        # callback=WandbCallback(
+        #     gradient_save_freq=100,
+        #     verbose=2,
+        # ),
+    )
 
     # inference
     myseed = 0

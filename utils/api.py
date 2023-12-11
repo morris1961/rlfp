@@ -38,7 +38,7 @@ def llm(prompt, stop=["\n"], model="gpt-3.5", max_tokens=100, temperature=0.0, t
         )
         return response.choices[0].message.content
     elif model == "llama2":
-        url = "http://127.0.0.1:5000/v1/chat/completions"
+        url = "https://smooth-looking-batteries-dual.trycloudflare.com/v1/chat/completions"
         headers = {
             "Content-Type": "application/json"
         }
@@ -77,9 +77,9 @@ def get_answer(prompt):
     for i in range(5):
         try:
             answers = [
-                llm(prompt, model="bard"), 
-                llm(prompt, model="bard"), 
-                llm(prompt, model="bard")
+                llm(prompt, model="llama2").strip(' '), 
+                llm(prompt, model="bard").strip(' '), 
+                llm(prompt, model="bard2").strip(' ')
             ]
             return answers
         except Exception as e:
@@ -89,8 +89,8 @@ def get_answer(prompt):
 
 if __name__ == "__main__":
     prompt = "Agent: go to the kitchen and pick up the apple. Then go to the bedroom and put it on the bed.\n\nHere is an example, you are Agent:\n\n"
-    print(llm(prompt, model="llama2"))
-    print(llm(prompt, model="gpt-3.5"))
-    print(llm(prompt, model="bard"))
+    # print(llm(prompt, model="llama2"))
+    # print(llm(prompt, model="gpt-3.5"))
+    # print(llm(prompt, model="bard"))
     print(llm(prompt, model="bard2"))
-    print(get_answer(prompt))
+    # print(get_answer(prompt))

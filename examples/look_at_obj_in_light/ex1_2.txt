@@ -1,12 +1,12 @@
 Alfworld: You are in the middle of a room. Looking quickly around you, you see a bed 1, a desk 1, a drawer 17, a drawer 16, a drawer 15, a drawer 14, a drawer 13, a drawer 12, a drawer 11, a drawer 10, a drawer 9, a drawer 8, a drawer 7, a drawer 6, a drawer 5, a drawer 4, a drawer 3, a drawer 2, a drawer 1, a dresser 1, a garbagecan 1, a shelf 6, a shelf 5, a shelf 4, a shelf 3, a shelf 2, and a shelf 1. Your task is to: look at alarmclock under the desklamp.
 Agent: go to desk 1
-Alfworld: You arrive at loc 7. On the desk 1, you see a alarmclock 1, a bowl 1, a cd 2, a cd 1, a mug 2, a mug 1, and a pencil 1.
+Alfworld: On the desk 1, you see a alarmclock 1, a bowl 1, a cd 2, a cd 1, a mug 2, a mug 1, and a pencil 1.
 Agent: take alarmclock 1 from desk 1
 Alfworld: You pick up the alarmclock 1 from the desk 1.
 Agent: inventory
 Alfworld: You are carrying: a alarmclock 1.
 Agent: go to dresser 1
-Alfworld: You arrive at loc 4. On the dresser 1, you see a alarmclock 2, a desklamp 1, a keychain 3, a keychain 1, and a watch 1.
+Alfworld: On the dresser 1, you see a alarmclock 2, a desklamp 1, a keychain 3, a keychain 1, and a watch 1.
 Agent: look
 Alfworld: You are facing the dresser 1. Next to it, you see nothing.
 Agent: use desklamp 1
