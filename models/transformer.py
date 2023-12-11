@@ -28,22 +28,16 @@ class CustomNetwork(nn.Module):
         
         # IMPORTANT:
         # Save output dimensions, used to create the distributions
-        self.latent_dim_pi = 128
-        self.latent_dim_vf = 128
+        self.latent_dim_pi = 3
+        self.latent_dim_vf = 3
 
         # base is bert and is shared by actor and critic
-        self.base_network = BertForMultipleChoice.from_pretrained(model_name)
+        # self.base_network = BertForMultipleChoice.from_pretrained(model_name)
 
-        # # Policy network
-        self.policy_net = nn.Sequential(
-            nn.Linear(LLM_SIZE, self.latent_dim_pi),
-            nn.ReLU(),
-        )
-        # # Value network
-        self.value_net = nn.Sequential(
-            nn.Linear(LLM_SIZE, self.latent_dim_vf),
-            nn.ReLU(),
-        )
+        # Policy network
+        self.policy_net = BertForMultipleChoice.from_pretrained(model_name)
+        # Value network
+        self.value_net = BertForMultipleChoice.from_pretrained(model_name)
 
     def forward(self, features: th.Tensor) -> Tuple[th.Tensor, th.Tensor]:
         """
@@ -54,13 +48,13 @@ class CustomNetwork(nn.Module):
 
     def forward_actor(self, features: th.Tensor) -> th.Tensor:
         # print("actor", features["input_ids"].shape)
-        x = self.base_network(**features).logits
-        return self.policy_net(x)
+        # x = self.base_network(**features).logits
+        return self.policy_net(**features).logits
 
     def forward_critic(self, features: th.Tensor) -> th.Tensor:
         # print("critic", features)
-        x = self.base_network(**features).logits
-        return self.value_net(x)
+        # x = self.base_network(**features).logits
+        return self.value_net(**features).logits
 
 
 class CustomActorCriticPolicy(ActorCriticPolicy):
