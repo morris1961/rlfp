@@ -9,7 +9,5 @@ class CustomExtractor(BaseFeaturesExtractor):
         super().__init__(observation_space, features_dim=3)
 
     def forward(self, observations):
-        for key, obs in observations.items():
-            observations[key] = obs.type(dtype=th.long)
-        # print(observations['input_ids'].type(dtype=th.long))
-        return observations
+        # bert need dtype is th.long
+        return {k: v.type(dtype=th.long) for k, v in observations.items()}

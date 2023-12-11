@@ -33,7 +33,8 @@ if __name__ == "__main__":
     myseed = 0
     done = False
     enc_obs, infos = env.reset(myseed)
+    print(f"observation: {infos['obs'][0]}")
     while not done:
         action, _state = model.predict(enc_obs, deterministic=True)
-        enc_obs, reward, done, _, infos = env.step(action[0])
+        enc_obs, reward, done, _, infos = env.step(action)
         print(f"observation: {infos['obs'][0]}")

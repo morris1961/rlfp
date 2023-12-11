@@ -7,9 +7,11 @@ import time
 import alfworld.agents.environment as environment
 import alfworld.agents.modules.generic as generic
 import random
-from transformers import BertTokenizer
+from transformers import AutoTokenizer
 from utils import get_answer, Reward_Compute
+from utils import LLM_SIZE
 
+FETURE_DIM = 100
 TASK_TYPES = {
     1: "pick_and_place_simple",
     2: "look_at_obj_in_light",
@@ -39,12 +41,12 @@ class ALFWorldEnv(gym.Env):
         # load config
         self.config = generic.load_config()
         env_type = self.config['env']['type'] # 'AlfredTWEnv' or 'AlfredThorEnv' or 'AlfredHybrid'
-        self.tokenizer = BertTokenizer.from_pretrained(self.config['transformer']['model'])
+        self.tokenizer = AutoTokenizer.from_pretrained(self.config['transformer']['model'], use_fast=True)
 
-        self.action_space = spaces.Discrete(3)
-        self.observation_space = spaces.Dict({"input_ids": spaces.Box(low=0, high=self.tokenizer.vocab_size, shape=(self.tokenizer.model_max_length,), dtype=int),
-                                              "token_type_ids": spaces.Box(low=0, high=1, shape=(self.tokenizer.model_max_length,), dtype=int),
-                                              "attention_mask": spaces.Box(low=0, high=1, shape=(self.tokenizer.model_max_length,), dtype=int),})
+        self.action_space = spaces.Discrete(LLM_SIZE)
+        self.observation_space = spaces.Dict({"input_ids": spaces.Box(low=0, high=self.tokenizer.vocab_size, shape=(LLM_SIZE, FETURE_DIM,), dtype=int),
+                                              "token_type_ids": spaces.Box(low=0, high=1, shape=(LLM_SIZE, FETURE_DIM,), dtype=int),
+                                              "attention_mask": spaces.Box(low=0, high=1, shape=(LLM_SIZE, FETURE_DIM,), dtype=int),})
         self.env = getattr(environment, env_type)(self.config, train_eval='train')
         self.env = self.env.init_env(batch_size=1)
         self.LLMs = []
@@ -61,7 +63,9 @@ class ALFWorldEnv(gym.Env):
         return [seed]
 
     def step(self, action):
-        print(f"attempt: {self.attempt}, a: {self.LLMs[action]}")
+        print(f"action: {'random' if action else 'bard'}, {self.LLMs[action]}", end=" ")
+        # print(f"LLM outputs: {self.LLMs}")
+        # print(f"attempt: {self.attempt}, a: {self.LLMs[action]}\n")
         self.attempt += 1
         if "THOUGHT:" in self.LLMs[action]:
             obs = ['OK.']
@@ -75,6 +79,7 @@ class ALFWorldEnv(gym.Env):
             self.get_llm_answer(self.history)
             enc_obs = self.tokenize(obs)
             dones = self.attempt >= self.max_attempt
+            print("reward", -1)
             return enc_obs, -1, dones, False, infos
         else:
             obs, _, dones, infos = self.env.step([self.LLMs[action]])
@@ -85,18 +90,19 @@ class ALFWorldEnv(gym.Env):
             time.sleep(1)
             
             self.get_llm_answer(self.history)
-            # if len(self.LLMs) == 0:
-            #     self.LLMs = np.random.choice(infos['admissible_commands'][0], 3) # get out put from LLMs
+            # self.LLMs = random.choices(infos['admissible_commands'][0], k=1) # get out put from LLMs
+            
             enc_obs = self.tokenize(obs)
             infos['obs'] = obs
             if self.attempt >= self.max_attempt:
                 dones = True
             else:
                 dones = dones[0]
+            print("reward: ", reward)
             return enc_obs, reward, dones, False, infos
 
     def reset(self, seed=None):
-        print("reset happened")
+        # print("reset happened")
         self.seed(seed=seed)
         obs, infos = self.env.reset()
         self.task = obs[0].split('\n')[-1].split(':')[-1].strip(' ')
@@ -107,8 +113,7 @@ class ALFWorldEnv(gym.Env):
         self.get_llm_answer(INIT_PROMPT + ex1 + '\nAnd now is your turn:\n' + obs[0] + '\n')
         self.history = INIT_PROMPT + ex1 + '\nAnd now is your turn:\n' + obs[0] + '\n'
 
-        # if len(self.LLMs) == 0:
-        #     self.LLMs = np.random.choice(infos['admissible_commands'][0], 3) # get out put from LLMs
+        # self.LLMs = random.choices(infos['admissible_commands'][0], k=1) # get out put from LLMs
 
         obs_text = ['\n'.join(obs[0].split('\n')[:-1])]
         enc_obs = self.tokenize(obs_text)
@@ -119,17 +124,18 @@ class ALFWorldEnv(gym.Env):
     
     def tokenize(self, obs):
         # can be commented
-        print(f"obs: {obs[0]}\ntask: {self.task}\nLLM outputs: {self.LLMs}")
-        enc = self.tokenizer(obs[0] + " [SEP] " + self.task + "[SEP]" + self.LLMs[0] + " [SEP] " + self.LLMs[1] + " [SEP] " + self.LLMs[2],
+        question = [self.task] * LLM_SIZE
+        choices = self.LLMs
+        enc = self.tokenizer(question, choices,
                             padding="max_length",
-                            max_length=self.tokenizer.model_max_length,
-                            return_tensors='np')
-        new_obs = {
+                            max_length=FETURE_DIM,
+                            return_tensors='np'
+                            )
+        return {
             'input_ids':enc['input_ids'],
             'token_type_ids':enc['token_type_ids'],
             'attention_mask':enc['attention_mask'],
         }
-        return new_obs
     
     def get_llm_answer(self, prompt):
         self.LLMs = get_answer(prompt)

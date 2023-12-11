@@ -14,6 +14,8 @@ models = [m for m in palm.list_models() if 'generateText' in m.supported_generat
 palm_model = models[0].name
 settings = {1: 4, 2: 4, 3: 4, 4: 4, 5: 4, 6: 4} # set all 6 categories to block none
 
+LLM_SIZE = 3
+
 def llm(prompt, stop=["\n"], model="gpt-3.5", max_tokens=100, temperature=0.0, top_p=1.0):
     messages = [
         {

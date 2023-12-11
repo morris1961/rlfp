@@ -1,5 +1,5 @@
 transformer:
-  model: "bert-base-cased"
+  model: "bert-base-uncased"
 
 dataset:
   data_path: '$ALFWORLD_DATA/json_2.1.1/train'

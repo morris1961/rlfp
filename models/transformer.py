@@ -6,8 +6,8 @@ from torch import nn
 
 from stable_baselines3 import PPO
 from stable_baselines3.common.policies import ActorCriticPolicy
-from transformers import BertForSequenceClassification
-
+from transformers import BertForMultipleChoice
+from utils import LLM_SIZE
 
 class CustomNetwork(nn.Module):
     """
@@ -22,26 +22,28 @@ class CustomNetwork(nn.Module):
     def __init__(
         self,
         features_dim,
-        model_name="bert-base-cased",
+        model_name="bert-base-uncased",
     ):
         super().__init__()
-
+        
         # IMPORTANT:
         # Save output dimensions, used to create the distributions
-        self.latent_dim_pi = features_dim
-        self.latent_dim_vf = features_dim
+        self.latent_dim_pi = 128
+        self.latent_dim_vf = 128
 
-        self.policy_net = BertForSequenceClassification.from_pretrained(model_name, num_labels=self.latent_dim_pi)
-        self.value_net = BertForSequenceClassification.from_pretrained(model_name, num_labels=self.latent_dim_vf)
+        # base is bert and is shared by actor and critic
+        self.base_network = BertForMultipleChoice.from_pretrained(model_name)
 
-        # Policy network
-        # self.policy_net = nn.Sequential(
-        #     nn.Linear(feature_dim, last_layer_dim_pi), nn.ReLU()
-        # )
-        # Value network
-        # self.value_net = nn.Sequential(
-        #     nn.Linear(feature_dim, last_layer_dim_vf), nn.ReLU()
-        # )
+        # # Policy network
+        self.policy_net = nn.Sequential(
+            nn.Linear(LLM_SIZE, self.latent_dim_pi),
+            nn.ReLU(),
+        )
+        # # Value network
+        self.value_net = nn.Sequential(
+            nn.Linear(LLM_SIZE, self.latent_dim_vf),
+            nn.ReLU(),
+        )
 
     def forward(self, features: th.Tensor) -> Tuple[th.Tensor, th.Tensor]:
         """
@@ -51,12 +53,14 @@ class CustomNetwork(nn.Module):
         return self.forward_actor(features), self.forward_critic(features)
 
     def forward_actor(self, features: th.Tensor) -> th.Tensor:
-        # print("actor", features['input_ids'].dtype)
-        return self.policy_net(**features).logits
+        # print("actor", features)
+        x = self.base_network(**features).logits.squeeze(1).unsqueeze(0)
+        return self.policy_net(x)
 
     def forward_critic(self, features: th.Tensor) -> th.Tensor:
         # print("critic", features)
-        return self.value_net(**features).logits
+        x = self.base_network(**features).logits.squeeze(1).unsqueeze(0)
+        return self.value_net(x)
 
 
 class CustomActorCriticPolicy(ActorCriticPolicy):
