@@ -1,4 +1,5 @@
 import os
+import requests
 from openai import OpenAI
 import google.generativeai as palm
 from vertexai.preview.language_models import TextGenerationModel
@@ -37,18 +38,19 @@ def llm(prompt, stop=["\n"], model="gpt-3.5", max_tokens=100, temperature=0.0, t
         )
         return response.choices[0].message.content
     elif model == "llama2":
-        client = OpenAI(
-            api_key="key",
-            base_url="http://localhost:5000/v1"
-        )
-        response = client.chat.completions.create(
-            model='llama2',
-            messages=messages,
-            max_tokens=max_tokens,
-            stop=stop,
-            temperature=temperature,
-        )
-        return response.choices[0].message.content
+        url = "http://127.0.0.1:5000/v1/chat/completions"
+        headers = {
+            "Content-Type": "application/json"
+        }
+        data = {
+            "mode": "instruct",
+            "messages": messages,
+            "max_tokens": max_tokens,
+            "stop": stop,
+        }
+        response = requests.post(url, headers=headers, json=data, verify=False)
+        assistant_message = response.json()['choices'][0]['message']['content']
+        return assistant_message
     elif model == "bard":
         completion = palm.generate_text(
             model=palm_model,
