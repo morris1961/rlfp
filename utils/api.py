@@ -77,9 +77,9 @@ def get_answer(prompt):
     for i in range(5):
         try:
             answers = [
-                llm(prompt, model="llama2").strip(' '), 
-                llm(prompt, model="bard").strip(' '), 
-                llm(prompt, model="bard2").strip(' ')
+                llm(prompt, model="llama2"), 
+                llm(prompt, model="bard"), 
+                llm(prompt, model="bard2")
             ]
             return answers
         except Exception as e:

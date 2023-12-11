@@ -152,6 +152,10 @@ class ALFWorldEnv(gym.Env):
         if self.LLMs[0].startswith('Agent: '):
             self.LLMs[0] = self.LLMs[0][self.LLMs[0].find('Agent: ')+7:]
 
+        for i in range(len(self.LLMs)):
+            if self.LLMs[i] is not None:
+                self.LLMs[i] = self.LLMs[i].strip(' ')
+
     def get_example(self, infos):
         env_name = infos['extra.gamefile'][0].split('/')[-3]
         example1 = None
