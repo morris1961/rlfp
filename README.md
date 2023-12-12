@@ -28,3 +28,8 @@ alfworld-download # do only the first time to download dataset to <storage_path>
 ```bash
 python train.py [config_file_path]
 ```
+
+# Run Baselines
+```bash
+bash baselines.sh
+```
