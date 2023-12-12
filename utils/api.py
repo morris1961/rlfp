@@ -6,13 +6,14 @@ from vertexai.preview.language_models import TextGenerationModel
 
 # OPENAI
 # export OPENAI_API_KEY='["key", "key", "key", "key"]'
-# openai_api_keys = eval(os.environ['OPENAI_API_KEY'])
-# len_keys = len(openai_api_keys)
-# request_times = 0
+openai_api_keys = eval(os.environ['OPENAI_API_KEY'])
+len_keys = len(openai_api_keys)
+request_times = 0
 # PALM
 palm.configure(api_key=os.environ['PALM_API_KEY'])
-models = [m for m in palm.list_models() if 'generateText' in m.supported_generation_methods]
-palm_model = models[0].name
+# models = [m for m in palm.list_models() if 'generateText' in m.supported_generation_methods]
+# palm_model = models[0].name
+palm_model = "models/text-bison-001"
 settings = {1: 4, 2: 4, 3: 4, 4: 4, 5: 4, 6: 4} # set all 6 categories to block none
 
 LLM_SIZE = 3
@@ -64,6 +65,15 @@ def llm(prompt, stop=["\n"], model="gpt-3.5", max_tokens=100, temperature=0.0, t
             top_p=top_p,
         )
         return completion.result
+        # model = TextGenerationModel.from_pretrained("text-bison@001")
+        # response = model.predict(
+        #     prompt,
+        #     temperature=temperature,
+        #     max_output_tokens=max_tokens,
+        #     stop_sequences=stop,
+        #     top_p=top_p,
+        # )
+        # return response.text
     elif model == "bard2":
         model = TextGenerationModel.from_pretrained("text-bison@002")
         response = model.predict(
