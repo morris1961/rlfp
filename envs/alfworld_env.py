@@ -37,7 +37,7 @@ Here is an example:\n
 '''
 class ALFWorldEnv(gym.Env):
 
-    def __init__(self, max_attempt) -> None:
+    def __init__(self, max_attempt, train=False) -> None:
         # load config
         self.config = generic.load_config()
         env_type = self.config['env']['type'] # 'AlfredTWEnv' or 'AlfredThorEnv' or 'AlfredHybrid'
@@ -47,7 +47,7 @@ class ALFWorldEnv(gym.Env):
         self.observation_space = spaces.Dict({"input_ids": spaces.Box(low=0, high=self.tokenizer.vocab_size, shape=(LLM_SIZE, FEATURE_DIM), dtype=int),
                                               "token_type_ids": spaces.Box(low=0, high=1, shape=(LLM_SIZE, FEATURE_DIM), dtype=int),
                                               "attention_mask": spaces.Box(low=0, high=1, shape=(LLM_SIZE, FEATURE_DIM), dtype=int),})
-        self.env = getattr(environment, env_type)(self.config, train_eval='train')
+        self.env = getattr(environment, env_type)(self.config, train_eval='train')   
         self.env = self.env.init_env(batch_size=1)
         self.LLMs = []
         self.max_attempt = max_attempt
@@ -58,6 +58,7 @@ class ALFWorldEnv(gym.Env):
         self.reward_compute = None
         self.LLM_model_name = ["llama2", "bard", "bard2"]
         os.makedirs('history', exist_ok=True)
+        os.makedirs('checkpoints', exist_ok=True)
         # self.reset()
 
     def seed(self, seed=None):
@@ -75,6 +76,7 @@ class ALFWorldEnv(gym.Env):
             infos = {}
             self.history += self.LLMs[action] + '\n' + obs[0] + '\n'
             infos['obs'] = obs
+            infos['won'] = [False]
 
             # can remove this part
             time.sleep(1)

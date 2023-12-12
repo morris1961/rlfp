@@ -8,11 +8,11 @@ EPOCH = 10
 RETRY = 30
 TOTAL_TIMESTAMPS = 2000
 MYSEED = 0
-MODEL_PATH = '../models/'
+MODEL_PATH = './checkpoints/'
 
 if __name__ == "__main__":
 
-    env = ALFWorldEnv(RETRY)
+    env = ALFWorldEnv(max_attempt=RETRY, train=True)
     env.seed(MYSEED)
     # print(f"task in this environment: {env.task}")
     

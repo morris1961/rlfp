@@ -6,35 +6,42 @@ from models import CustomExtractor
 import os
 
 EPOCH = 10
-RETRY = 30
+RETRY = 60
 TOTAL_TIMESTAMPS = 2000
 MYSEED = 0
-MODEL_PATH = '../models/'
+MODEL_PATH = './checkpoints/'
 
 if __name__ == "__main__":
 
-    env = ALFWorldEnv(RETRY)
+    env = ALFWorldEnv(max_attempt=RETRY, train=False)
     env.seed(MYSEED)
     # print(f"task in this environment: {env.task}")
-    
-    model = A2C(
-        CustomActorCriticPolicy,
-        env,
-        n_steps=5,
-        verbose=1,
-        policy_kwargs={
-            "features_extractor_class":CustomExtractor,
-        }
-    )
 
     model = A2C.load(os.path.join(MODEL_PATH, 'model'), env=env)
 
-    mean_reward, std_reward = evaluate_policy(model, model.get_env(), n_eval_episodes=1)
-
-    # # inference
-    # done = False
-    # enc_obs, infos = env.reset(MYSEED)
-    # while not done:
-    #     action, _state = model.predict(enc_obs, deterministic=True)
-    #     enc_obs, reward, done, _, infos = env.step(action)
-    #     print(f"observation: {infos['obs'][0]}")
+    his_avg_reward = []
+    his_total_reward = []
+    num_trials = 0
+    num_wins = 0
+        
+    for _ in range(EPOCH):
+        total_reward = 0
+        num_steps = 0
+        done = False
+        enc_obs, infos = env.reset(MYSEED)
+        
+        while not done:
+            action = 0
+            # action, _state = model.predict(enc_obs, deterministic=True)
+            enc_obs, reward, done, _, infos = env.step(action)
+            total_reward += reward
+            num_steps += 1
+            if 'won' in infos and infos['won'] == True:
+                num_wins += 1
+                num_trials += 1
+            elif done:
+                num_trials += 1
+        his_total_reward.append(total_reward)
+        his_avg_reward.append(total_reward/num_steps)
+        # print(num_wins, num_trials)
+        # print(total_reward, num_steps)
