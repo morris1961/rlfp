@@ -14,7 +14,11 @@ with open('base_config.yaml') as reader:
 RETRY = 50
 
 def check_ds():
-    json_dir = os.path.expanduser('~/.cache/alfworld/json_2.1.1/')
+    if os.environ['ALFWORLD_DATA']:
+        path = os.environ['ALFWORLD_DATA']
+    else:
+        path = os.path.expanduser('~/.cache/alfworld')
+    json_dir = os.path.join(path, 'json_2.1.1')
     unseen_dir = os.path.join(json_dir, 'valid_unseen')
     test_dir = os.path.join(json_dir, 'test')
     if not os.path.exists(test_dir):
