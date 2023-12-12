@@ -3,9 +3,9 @@ from stable_baselines3 import A2C
 from models import CustomActorCriticPolicy
 from models import CustomExtractor
 
-EPOCH = 1
+EPOCH = 10
 RETRY = 30
-TOTAL_TIMESTAMPS = 1000
+TOTAL_TIMESTAMPS = 2000
 MYSEED = 0
 
 if __name__ == "__main__":

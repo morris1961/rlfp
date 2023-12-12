@@ -4,5 +4,6 @@ __pycache__
 json_2.1.1/*
 logic/*
 detectors/*
+history/*
 
 alfworld/*

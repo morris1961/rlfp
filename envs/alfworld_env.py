@@ -30,14 +30,11 @@ TASK_TYPES = {
 INIT_PROMPT = '''Interact with a household to solve a task. Imagine you are an intelligent agent in a household environment and your target is to perform actions to complete the task goal. At the beginning of your interactions, you will be given the detailed description of the current environment and your goal to accomplish. For each of your turn, you will be given a list of actions which you can choose one to perform in this turn. You have two choice:
 1. Directly output the action in this turn. Output format: Your next action. 
 2. You should first think about the current condition and plan for your future actions, and then output your action in this turn. Output format: THOUGHT: Your thoughts. Reminder: The more times you think, the more penalty you retrieve.
-After each turn, the environment will give you immediate feedback based on which you plan your next few steps. If the environment output \"Nothing happened.\", that means the previous action is invalid and you should try more options; if the environment output \"OK.\", that means you did not do anything to the environment. You have better do action in next step. Last but not least, your output cannot contain \"Agent: \".
-There are other agents works with you, they might output irrelevant commends or thoughts. Don't be misled.
+After each turn, the environment will give you immediate feedback based on which you plan your next few steps. If the environment output \"Nothing happened.\", that means the previous action is invalid and you should try more options; if the environment output \"OK.\", that means you did not do anything to the environment. You have better do action in next step.
+Last but not least, there are other agents working with you, which output irrelevant actions or thoughts. Don't be misled.
 
 Here is an example:\n
 '''
-# Rule:
-# 1. The action must be chosen from the given available actions. Any actions except provided available actions will be regarded as illegal.
-# 2. Think when necessary, try to act directly more in the process.
 class ALFWorldEnv(gym.Env):
 
     def __init__(self, max_attempt) -> None:
@@ -60,6 +57,7 @@ class ALFWorldEnv(gym.Env):
         self.task = None
         self.reward_compute = None
         self.LLM_model_name = ["llama2", "bard", "bard2"]
+        os.makedirs('history', exist_ok=True)
         # self.reset()
 
     def seed(self, seed=None):
@@ -115,17 +113,18 @@ class ALFWorldEnv(gym.Env):
     def reset(self, seed=None):
         
         # store history
+        
         if self.history is not None:
             current_time = datetime.now()
             formatted_time = current_time.strftime("%H_%M_%S")
-            f = open(f'./history/{formatted_time}.txt', "w")
+            f = open(f'history/{formatted_time}.txt', "w")
             f.write(self.history)
             f.close()
         
         self.seed(seed=seed)
         obs, infos = self.env.reset()
         self.task = obs[0].split('\n')[-1].split(':')[-1].strip(' ')
-        print(f"observation: {obs[0]}")
+        # print(f"observation: {obs[0]}")
         print(f"task: {self.task}")
 
         self.reward_compute = Reward_Compute(obs[0])
@@ -152,11 +151,11 @@ class ALFWorldEnv(gym.Env):
             max_length=FEATURE_DIM,
             return_tensors='np'
         )
-        if enc['input_ids'].shape == (3,):
-            print("Bug!!!!")
-            print(question)
-            print(choices)
-            exit()
+        # if enc['input_ids'].shape == (3,):
+        #     print("Bug!!!!")
+        #     print(question)
+        #     print(choices)
+        #     exit()
         return {
             'input_ids': enc['input_ids'],
             'token_type_ids': enc['token_type_ids'],
