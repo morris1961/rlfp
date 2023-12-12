@@ -45,3 +45,5 @@ if __name__ == "__main__":
         his_avg_reward.append(total_reward/num_steps)
         # print(num_wins, num_trials)
         # print(total_reward, num_steps)
+    print('Avg step rewards', his_avg_reward)
+    print('Accuracy', num_wins/num_trials)
