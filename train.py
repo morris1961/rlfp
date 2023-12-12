@@ -2,11 +2,13 @@ from envs import ALFWorldEnv
 from stable_baselines3 import A2C
 from models import CustomActorCriticPolicy
 from models import CustomExtractor
+import os
 
 EPOCH = 10
 RETRY = 30
 TOTAL_TIMESTAMPS = 2000
 MYSEED = 0
+MODEL_PATH = '../models/'
 
 if __name__ == "__main__":
 
@@ -33,6 +35,8 @@ if __name__ == "__main__":
             #     verbose=2,
             # ),
         )
+
+    model.save(os.path.join(MODEL_PATH, 'model'))
 
     # inference
     done = False
