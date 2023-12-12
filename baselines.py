@@ -35,7 +35,7 @@ def process_ob(ob):
     return ob
 
 def process_action(action):
-    if action is not None:
+    if action is not None and action != '':
         action = action.strip()
         if action.startswith('Agent: '):
             action = action[action.find('Agent: ')+7:]
