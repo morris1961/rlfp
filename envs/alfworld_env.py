@@ -56,6 +56,7 @@ class ALFWorldEnv(gym.Env):
         self.task = None
         self.reward_compute = None
         self.LLM_model_name = ["llama2", "bard", "bard2"]
+        os.makedirs('history', exist_ok=True)
         # self.reset()
 
     def seed(self, seed=None):
@@ -69,7 +70,7 @@ class ALFWorldEnv(gym.Env):
         if "THOUGHT:" in self.LLMs[action]:
             self.thought += 1
             obs = ['OK.']
-            print(f"observation: {obs[0]}")
+            # print(f"observation: {obs[0]}")
             infos = {}
             self.history += self.LLMs[action] + '\n' + obs[0] + '\n'
             infos['obs'] = obs
@@ -111,17 +112,18 @@ class ALFWorldEnv(gym.Env):
     def reset(self, seed=None):
         
         # store history
+        
         if self.history is not None:
             current_time = datetime.now()
             formatted_time = current_time.strftime("%H_%M_%S")
-            f = open(f'./history/{formatted_time}.txt', "w")
+            f = open(f'history/{formatted_time}.txt', "w")
             f.write(self.history)
             f.close()
         
         self.seed(seed=seed)
         obs, infos = self.env.reset()
         self.task = obs[0].split('\n')[-1].split(':')[-1].strip(' ')
-        print(f"observation: {obs[0]}")
+        # print(f"observation: {obs[0]}")
         print(f"task: {self.task}")
 
         self.reward_compute = Reward_Compute(obs[0])
