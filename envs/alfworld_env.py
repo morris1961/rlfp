@@ -10,9 +10,11 @@ import random
 from transformers import AutoTokenizer
 from utils import get_answer, Reward_Compute
 from utils import LLM_SIZE
+from datetime import datetime
 
 FEATURE_DIM = 256
 THOUGHT_PENALTY = -0.1
+WIN_REWARD = 1
 TASK_TYPES = {
     1: "pick_and_place_simple",
     2: "look_at_obj_in_light",
@@ -29,6 +31,7 @@ INIT_PROMPT = '''Interact with a household to solve a task. Imagine you are an i
 1. Directly output the action in this turn. Output format: Your next action. 
 2. You should first think about the current condition and plan for your future actions, and then output your action in this turn. Output format: THOUGHT: Your thoughts. Reminder: The more times you think, the more penalty you retrieve.
 After each turn, the environment will give you immediate feedback based on which you plan your next few steps. If the environment output \"Nothing happened.\", that means the previous action is invalid and you should try more options; if the environment output \"OK.\", that means you did not do anything to the environment. You have better do action in next step. Last but not least, your output cannot contain \"Agent: \".
+There are other agents works with you, they might output irrelevant commends or thoughts. Don't be misled.
 
 Here is an example:\n
 '''
@@ -101,11 +104,24 @@ class ALFWorldEnv(gym.Env):
             infos['obs'] = [ob]
             if self.attempt >= self.max_attempt:
                 dones = True
+                reward = 0
             else:
                 dones = dones[0]
+
+            if 'You won!' in obs[0]:
+                reward = WIN_REWARD
             return enc_obs, reward, dones, False, infos
 
     def reset(self, seed=None):
+        
+        # store history
+        if self.history is not None:
+            current_time = datetime.now()
+            formatted_time = current_time.strftime("%H_%M_%S")
+            f = open(f'./history/{formatted_time}.txt', "w")
+            f.write(self.history)
+            f.close()
+        
         self.seed(seed=seed)
         obs, infos = self.env.reset()
         self.task = obs[0].split('\n')[-1].split(':')[-1].strip(' ')

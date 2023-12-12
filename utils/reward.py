@@ -8,7 +8,7 @@ import pandas as pd
 
 target_tag = ['PNOUN', 'NOUN', 'PROPN']
 task = 'examine an alarmclock with the desklamp.'
-weight = 1
+weight = 0.5
 
 class Reward_Compute:
     def __init__(self, obs):
