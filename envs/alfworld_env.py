@@ -53,13 +53,13 @@ class ALFWorldEnv(gym.Env):
         self.max_attempt = max_attempt
         self.attempt = 0
         self.thought = 0
+        self.reward = 0
         self.history = None
         self.task = None
         self.reward_compute = None
         self.LLM_model_name = ["llama2", "bard", "bard2"]
         os.makedirs('history', exist_ok=True)
         os.makedirs('checkpoints', exist_ok=True)
-        # self.reset()
 
     def seed(self, seed=None):
         self.np_random, seed = seeding.np_random(seed)
@@ -78,13 +78,10 @@ class ALFWorldEnv(gym.Env):
             infos['obs'] = obs
             infos['won'] = [False]
 
-            # can remove this part
-            time.sleep(1)
-            
             self.get_llm_answer()
             enc_obs = self.tokenize(obs)
             dones = self.attempt >= self.max_attempt
-            return enc_obs, THOUGHT_PENALTY * self.thought, dones, False, infos
+            reward = THOUGHT_PENALTY * self.thought
         else:
             obs, _, dones, infos = self.env.step([self.LLMs[action]])
             if obs[0].startswith('You arrive at loc '):
@@ -94,10 +91,6 @@ class ALFWorldEnv(gym.Env):
             print(f"observation: {ob}")
 
             self.history += self.LLMs[action] + '\n' + ob + '\n'
-            reward = self.reward_compute.obs_reward(ob)
-            
-            # can remove this part
-            time.sleep(1)
             
             self.get_llm_answer()
             enc_obs = self.tokenize([ob])
@@ -110,24 +103,26 @@ class ALFWorldEnv(gym.Env):
 
             if 'You won!' in obs[0]:
                 reward = WIN_REWARD
-            return enc_obs, reward, dones, False, infos
+            else:
+                reward = self.reward_compute.obs_reward(ob)
+        
+        self.reward += reward
+        return enc_obs, reward, dones, False, infos
 
     def reset(self, seed=None):
-        
         # store history
-        
-        if self.history is not None:
-            current_time = datetime.now()
-            formatted_time = current_time.strftime("%H_%M_%S")
-            f = open(f'history/{formatted_time}.txt', "w")
-            f.write(self.history)
-            f.close()
+        # if self.history is not None:
+        #     current_time = datetime.now()
+        #     formatted_time = current_time.strftime("%H_%M_%S")
+        #     f = open(f'history/{formatted_time}.txt', "w")
+        #     f.write(self.history)
+        #     f.close()
         
         self.seed(seed=seed)
         obs, infos = self.env.reset()
         self.task = obs[0].split('\n')[-1].split(':')[-1].strip(' ')
-        # print(f"observation: {obs[0]}")
-        print(f"task: {self.task}")
+        print(f"last environment average reward: {self.reward / self.attempt:4f}")
+        print(f"=============\ngame: {infos['extra.gamefile'][0].split('/')[-3]}\ntask: {self.task}\n=============")
 
         self.reward_compute = Reward_Compute(obs[0])
 
@@ -141,6 +136,8 @@ class ALFWorldEnv(gym.Env):
         infos['obs'] = obs_text
         infos['task'] = self.task
         self.attempt = 0
+        self.thought = 0
+        self.reward = 0
         return enc_obs, infos
     
     def tokenize(self, obs):
@@ -153,11 +150,7 @@ class ALFWorldEnv(gym.Env):
             max_length=FEATURE_DIM,
             return_tensors='np'
         )
-        # if enc['input_ids'].shape == (3,):
-        #     print("Bug!!!!")
-        #     print(question)
-        #     print(choices)
-        #     exit()
+
         return {
             'input_ids': enc['input_ids'],
             'token_type_ids': enc['token_type_ids'],
@@ -169,7 +162,6 @@ class ALFWorldEnv(gym.Env):
         
         for i, llm in enumerate(self.LLMs):
             if llm is None or llm == '':
-                print("===========\nNone exists~~\n===========")
                 self.LLMs[i] = "look"
 
         for i in range(len(self.LLMs)):

@@ -21,15 +21,15 @@ class CustomNetwork(nn.Module):
 
     def __init__(
         self,
-        features_dim,
+        features_dim=0,
         model_name="bert-base-uncased",
     ):
         super().__init__()
         
         # IMPORTANT:
         # Save output dimensions, used to create the distributions
-        self.latent_dim_pi = 3
-        self.latent_dim_vf = 3
+        self.latent_dim_pi = LLM_SIZE
+        self.latent_dim_vf = LLM_SIZE
 
         # base is bert and is shared by actor and critic
         # self.base_network = BertForMultipleChoice.from_pretrained(model_name)
@@ -78,4 +78,4 @@ class CustomActorCriticPolicy(ActorCriticPolicy):
         )
 
     def _build_mlp_extractor(self) -> None:
-        self.mlp_extractor = CustomNetwork(self.features_dim)
+        self.mlp_extractor = CustomNetwork()

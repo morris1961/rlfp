@@ -36,7 +36,7 @@ if __name__ == "__main__":
             # ),
         )
 
-    model.save(os.path.join(MODEL_PATH, 'model'))
+        model.save(os.path.join(MODEL_PATH, f'{i}'))
 
     # inference
     done = False
@@ -44,4 +44,3 @@ if __name__ == "__main__":
     while not done:
         action, _state = model.predict(enc_obs, deterministic=True)
         enc_obs, reward, done, _, infos = env.step(action)
-        print(f"observation: {infos['obs'][0]}")
