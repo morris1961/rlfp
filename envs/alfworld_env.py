@@ -122,8 +122,13 @@ class ALFWorldEnv(gym.Env):
         obs, infos = self.env.reset()
         self.task = obs[0].split('\n')[-1].split(':')[-1].strip(' ')
         if self.attempt:
+            print("****************************************************")
             print(f"last environment average reward: {self.reward / self.attempt:4f}")
-        print(f"=============\ngame: {infos['extra.gamefile'][0].split('/')[-3]}\ntask: {self.task}\n=============")
+            print("****************************************************")
+
+        print("====================================================")
+        print(f"game: {infos['extra.gamefile'][0].split('/')[-3]}\ntask: {self.task}")
+        print("====================================================")
 
         self.reward_compute = Reward_Compute(obs[0])
 
