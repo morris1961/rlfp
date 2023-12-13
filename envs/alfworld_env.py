@@ -13,7 +13,7 @@ from utils import LLM_SIZE
 from datetime import datetime
 
 FEATURE_DIM = 256
-THOUGHT_PENALTY = -0.1
+THOUGHT_PENALTY = -0.2
 WIN_REWARD = 1
 TASK_TYPES = {
     1: "pick_and_place_simple",
@@ -57,7 +57,12 @@ class ALFWorldEnv(gym.Env):
         self.history = None
         self.task = None
         self.reward_compute = None
+        self.infos = None
         self.LLM_model_name = ["llama2", "bard", "bard2"]
+        
+        current_time = datetime.now()
+        formatted_time = current_time.strftime("%H_%M_%S")
+        self.history_file = f'history/{formatted_time}.txt'
         os.makedirs('history', exist_ok=True)
         os.makedirs('checkpoints', exist_ok=True)
 
@@ -110,21 +115,19 @@ class ALFWorldEnv(gym.Env):
         return enc_obs, reward, dones, False, infos
 
     def reset(self, seed=None):
-        # store history
-        # if self.history is not None:
-        #     current_time = datetime.now()
-        #     formatted_time = current_time.strftime("%H_%M_%S")
-        #     f = open(f'history/{formatted_time}.txt', "w")
-        #     f.write(self.history)
-        #     f.close()
-        
         self.seed(seed=seed)
-        obs, infos = self.env.reset()
-        self.task = obs[0].split('\n')[-1].split(':')[-1].strip(' ')
         if self.attempt:
             print("****************************************************")
             print(f"last environment average reward: {self.reward / self.attempt:4f}")
             print("****************************************************")
+            file = open(self.history_file, 'a')
+            file.write(f"game: {self.infos['extra.gamefile'][0].split('/')[-3]}\naverage reward: {self.reward / self.attempt:4f}\n")
+            file.close()
+            
+        obs, infos = self.env.reset()
+        self.infos = infos
+
+        self.task = obs[0].split('\n')[-1].split(':')[-1].strip(' ')
 
         print("====================================================")
         print(f"game: {infos['extra.gamefile'][0].split('/')[-3]}\ntask: {self.task}")
