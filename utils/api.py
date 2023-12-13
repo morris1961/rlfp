@@ -3,6 +3,7 @@ import requests
 from openai import OpenAI
 import google.generativeai as palm
 from vertexai.preview.language_models import TextGenerationModel
+from vertexai.preview.generative_models import GenerativeModel
 
 # OPENAI
 # export OPENAI_API_KEY='["key", "key", "key", "key"]'
@@ -11,10 +12,10 @@ len_keys = len(openai_api_keys)
 request_times = 0
 # PALM
 palm.configure(api_key=os.environ['PALM_API_KEY'])
-# models = [m for m in palm.list_models() if 'generateText' in m.supported_generation_methods]
-# palm_model = models[0].name
-palm_model = "models/text-bison-001"
-settings = {1: 4, 2: 4, 3: 4, 4: 4, 5: 4, 6: 4} # set all 6 categories to block none
+# set all 10 categories to block none
+old_settings = {0: 4, 1: 4, 2: 4, 3: 4, 4: 4, 5: 4, 6: 4}
+new_settings = {7: 4, 8: 4, 9: 4, 10: 4}
+vertex_settings = {0: 4, 1: 4, 2: 4, 3: 4, 4: 4}
 
 LLM_SIZE = 3
 
@@ -25,6 +26,12 @@ def llm(prompt, stop=["\n"], model="gpt-3.5", max_tokens=100, temperature=0.0, t
             "content": prompt
         }
     ]
+    config = {
+        'temperature': temperature,
+        'max_output_tokens': max_tokens,
+        'stop_sequences': stop,
+        'top_p': top_p,
+    }
     if model == "gpt-3.5":
         global request_times
         request_times += 1
@@ -56,12 +63,12 @@ def llm(prompt, stop=["\n"], model="gpt-3.5", max_tokens=100, temperature=0.0, t
         return assistant_message
     elif model == "bard":
         completion = palm.generate_text(
-            model=palm_model,
+            model='models/text-bison-001',
             prompt=prompt,
             temperature=temperature,
             max_output_tokens=max_tokens,
             stop_sequences=stop,
-            safety_settings=settings,
+            safety_settings=old_settings,
             top_p=top_p,
         )
         return completion.result
@@ -84,6 +91,20 @@ def llm(prompt, stop=["\n"], model="gpt-3.5", max_tokens=100, temperature=0.0, t
             top_p=top_p,
         )
         return response.text
+    elif model == "gemini":
+        model = palm.GenerativeModel('gemini-pro')
+        response = model.generate_content(
+            contents=prompt,
+            generation_config=config,
+            safety_settings=new_settings,
+        )
+        # model = GenerativeModel("gemini-pro")
+        # response = model.generate_content(
+        #     contents=prompt,
+        #     generation_config=config,
+        #     safety_settings=vertex_settings,
+        # )
+        return response.text
     
 def get_answer(prompt, LLM_model_name):
     for i in range(5):
@@ -105,4 +126,5 @@ if __name__ == "__main__":
     print(llm(prompt, model="gpt-3.5"))
     print(llm(prompt, model="bard"))
     print(llm(prompt, model="bard2"))
+    print(llm(prompt, model="gemini"))
     print(get_answer(prompt))
