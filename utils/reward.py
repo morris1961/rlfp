@@ -9,11 +9,14 @@ import pandas as pd
 target_tag = ['PNOUN', 'NOUN', 'PROPN']
 task = 'examine an alarmclock with the desklamp.'
 weight = 0.5
+THOUGHT_PENALTY = -0.2
 
 class Reward_Compute:
     def __init__(self, obs):
       task = obs.split('\n')[-1].split(':')[-1]
       self.task_noun_list = self.NounOfSentence(task)
+      self.total_think = 0
+      self.cont_think = 0
     
     def NounOfSentence(self, sentence, show_all=False):
 
@@ -45,11 +48,23 @@ class Reward_Compute:
         return weight * raw_score
 
     def obs_reward(self, obs):
+        self.cont_think = 0
         task_noun_list = self.task_noun_list
         obs_noun_list = self.NounOfSentence(obs)
         # print(task_noun_list)
         # print(obs_noun_list)
         reward = self.union_score(task_list=task_noun_list, obs_list=obs_noun_list)
+        return reward
+    
+    def think_penalty(self, content):
+        self.cont_think += 1
+        self.total_think += 1
+        reward = THOUGHT_PENALTY * self.cont_think
+        think_useful = self.obs_reward(content)
+        if(think_useful == 0):
+            reward += THOUGHT_PENALTY * self.cont_think
+        else:
+            reward += think_useful
         return reward
 
 if __name__=='__main__':

@@ -13,8 +13,8 @@ from utils import LLM_SIZE
 from datetime import datetime
 
 FEATURE_DIM = 256
-THOUGHT_PENALTY = -0.2
 WIN_REWARD = 1
+LOSE_PENALTY = -1
 TASK_TYPES = {
     1: "pick_and_place_simple",
     2: "look_at_obj_in_light",
@@ -82,11 +82,11 @@ class ALFWorldEnv(gym.Env):
             self.history += self.LLMs[action] + '\n' + obs[0] + '\n'
             infos['obs'] = obs
             infos['won'] = [False]
+            reward = self.reward_compute.think_penalty(self.LLMs[action])
 
             self.get_llm_answer()
             enc_obs = self.tokenize(obs)
             dones = self.attempt >= self.max_attempt
-            reward = THOUGHT_PENALTY * self.thought
         else:
             obs, _, dones, infos = self.env.step([self.LLMs[action]])
             if obs[0].startswith('You arrive at loc '):
@@ -102,7 +102,7 @@ class ALFWorldEnv(gym.Env):
             infos['obs'] = [ob]
             if self.attempt >= self.max_attempt:
                 dones = True
-                reward = 0
+                reward = LOSE_PENALTY
             else:
                 dones = dones[0]
 
@@ -112,6 +112,7 @@ class ALFWorldEnv(gym.Env):
                 reward = self.reward_compute.obs_reward(ob)
         
         self.reward += reward
+        print(f'reward {self.attempt}: {reward}')
         return enc_obs, reward, dones, False, infos
 
     def reset(self, seed=None):
