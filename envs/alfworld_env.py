@@ -72,8 +72,8 @@ class ALFWorldEnv(gym.Env):
 
     def step(self, action):
         print(f"action {self.attempt}: {self.LLM_model_name[action]}, {self.LLMs[action]}")
-        for i, a in enumerate(self.LLMs):
-            print(f"model: {self.LLM_model_name[i]}, a: {a}")
+        # for i, a in enumerate(self.LLMs):
+        #     print(f"model: {self.LLM_model_name[i]}, a: {a}")
 
         self.attempt += 1
         if "THOUGHT:" in self.LLMs[action]:
