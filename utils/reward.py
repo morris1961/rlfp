@@ -9,8 +9,8 @@ import pandas as pd
 target_tag = ['PNOUN', 'NOUN', 'PROPN']
 task = '\n:put two toiletpaper in drawer.'
 weight = 0.5
-THOUGHT_PENALTY = -0.2
-DO_NOTHING_PENALTY = -0.2
+THOUGHT_PENALTY = -0.3
+DO_NOTHING_PENALTY = -0.1
 
 class Reward_Compute:
     def __init__(self, obs):

@@ -9,7 +9,6 @@ import alfworld.agents.modules.generic as generic
 import random
 from transformers import AutoTokenizer
 from utils import get_answer, Reward_Compute
-from utils import LLM_SIZE
 from datetime import datetime
 
 FEATURE_DIM = 256
@@ -29,36 +28,36 @@ TASK_TYPES = {
 
 INIT_PROMPT = '''Interact with a household to solve a task. Imagine you are an intelligent agent in a household environment and your target is to perform actions to complete the task goal. At the beginning of your interactions, you will be given the detailed description of the current environment and your goal to accomplish. For each of your turn, you will be given a list of actions which you can choose one to perform in this turn. You have two choice:
 1. Directly output the action in this turn. Output format: Your next action. 
-2. You should first think about the current condition and plan for your future actions, and then output your action in this turn. Output format: THOUGHT: Your thoughts. Reminder: The more times you think, the more penalty you retrieve.
+2. You should first think about the current condition and plan for your future actions, and then output your action in this turn. Output format: THOUGHT: Your thoughts.
 After each turn, the environment will give you immediate feedback based on which you plan your next few steps. If the environment output \"Nothing happened.\", that means the previous action is invalid and you should try more options; if the environment output \"OK.\", that means you did not do anything to the environment. You have better do action in next step.
-Last but not least, there are other agents working with you, which output irrelevant actions or thoughts. Don't be misled.
+Last but not least, if you think too many times, the reward you acquire will be gradually decreased. So, try to react to the environment after you think.
 
 Here is an example:\n
 '''
 class ALFWorldEnv(gym.Env):
 
-    def __init__(self, max_attempt, train=False) -> None:
+    def __init__(self, max_attempt, llms, train=False) -> None:
         # load config
         self.config = generic.load_config()
         env_type = self.config['env']['type'] # 'AlfredTWEnv' or 'AlfredThorEnv' or 'AlfredHybrid'
         self.tokenizer = AutoTokenizer.from_pretrained(self.config['transformer']['model'], use_fast=True)
+        self.LLM_model_name = llms
+        self.llm_size = len(self.LLM_model_name)
 
-        self.action_space = spaces.Discrete(LLM_SIZE)
-        self.observation_space = spaces.Dict({"input_ids": spaces.Box(low=0, high=self.tokenizer.vocab_size, shape=(LLM_SIZE, FEATURE_DIM), dtype=int),
-                                              "token_type_ids": spaces.Box(low=0, high=1, shape=(LLM_SIZE, FEATURE_DIM), dtype=int),
-                                              "attention_mask": spaces.Box(low=0, high=1, shape=(LLM_SIZE, FEATURE_DIM), dtype=int),})
+        self.action_space = spaces.Discrete(self.llm_size)
+        self.observation_space = spaces.Dict({"input_ids": spaces.Box(low=0, high=self.tokenizer.vocab_size, shape=(self.llm_size, FEATURE_DIM), dtype=int),
+                                              "token_type_ids": spaces.Box(low=0, high=1, shape=(self.llm_size, FEATURE_DIM), dtype=int),
+                                              "attention_mask": spaces.Box(low=0, high=1, shape=(self.llm_size, FEATURE_DIM), dtype=int),})
         self.env = getattr(environment, env_type)(self.config, train_eval='train')   
         self.env = self.env.init_env(batch_size=1)
         self.LLMs = []
         self.max_attempt = max_attempt
         self.attempt = 0
-        self.thought = 0
         self.reward = 0
         self.history = None
         self.task = None
         self.reward_compute = None
         self.infos = None
-        self.LLM_model_name = ["llama2", "bard", "bard2"]
         
         current_time = datetime.now()
         formatted_time = current_time.strftime("%H_%M_%S")
@@ -73,9 +72,11 @@ class ALFWorldEnv(gym.Env):
 
     def step(self, action):
         print(f"action {self.attempt}: {self.LLM_model_name[action]}, {self.LLMs[action]}")
+        for i, a in enumerate(self.LLMs):
+            print(f"model: {self.LLM_model_name[i]}, a: {a}")
+
         self.attempt += 1
         if "THOUGHT:" in self.LLMs[action]:
-            self.thought += 1
             obs = ['OK.']
             print(f"observation: {obs[0]}")
             infos = {}
@@ -85,8 +86,12 @@ class ALFWorldEnv(gym.Env):
             reward = self.reward_compute.think_penalty(self.LLMs[action])
 
             self.get_llm_answer()
-            enc_obs = self.tokenize(obs)
-            dones = self.attempt >= self.max_attempt
+            enc_obs = self.tokenize()
+            if self.attempt >= self.max_attempt:
+                dones = True
+                reward = LOSE_PENALTY
+            else:
+                dones = False
         else:
             obs, _, dones, infos = self.env.step([self.LLMs[action]])
             if obs[0].startswith('You arrive at loc '):
@@ -98,21 +103,17 @@ class ALFWorldEnv(gym.Env):
             self.history += self.LLMs[action] + '\n' + ob + '\n'
             
             self.get_llm_answer()
-            enc_obs = self.tokenize([ob])
+            enc_obs = self.tokenize()
             infos['obs'] = [ob]
             if self.attempt >= self.max_attempt:
                 dones = True
                 reward = LOSE_PENALTY
             else:
                 dones = dones[0]
-
-            if 'You won!' in obs[0]:
-                reward = WIN_REWARD
-            else:
-                reward = self.reward_compute.obs_reward(ob)
+                reward = WIN_REWARD if dones else self.reward_compute.obs_reward(ob)
         
         self.reward += reward
-        print(f'reward {self.attempt}: {reward}')
+        print(f'reward {self.attempt}: {reward:4f}')
         return enc_obs, reward, dones, False, infos
 
     def reset(self, seed=None):
@@ -142,16 +143,15 @@ class ALFWorldEnv(gym.Env):
         self.get_llm_answer()
 
         obs_text = ['\n'.join(obs[0].split('\n')[:-1])]
-        enc_obs = self.tokenize(obs_text)
+        enc_obs = self.tokenize()
         infos['obs'] = obs_text
         infos['task'] = self.task
         self.attempt = 0
-        self.thought = 0
         self.reward = 0
         return enc_obs, infos
     
-    def tokenize(self, obs):
-        question = [self.task for _ in range(LLM_SIZE)]
+    def tokenize(self):
+        question = [self.task for _ in range(self.llm_size)]
         choices = self.LLMs
         enc = self.tokenizer(
             question,

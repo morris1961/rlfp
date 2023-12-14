@@ -4,10 +4,10 @@ from gymnasium import spaces
 import torch as th
 from torch import nn
 
-from stable_baselines3 import PPO
 from stable_baselines3.common.policies import ActorCriticPolicy
 from transformers import BertForMultipleChoice
-from utils import LLM_SIZE
+
+LLM_SIZE = 5
 
 class CustomNetwork(nn.Module):
     """
@@ -21,7 +21,6 @@ class CustomNetwork(nn.Module):
 
     def __init__(
         self,
-        features_dim=0,
         model_name="bert-base-uncased",
     ):
         super().__init__()
