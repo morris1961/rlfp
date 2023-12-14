@@ -7,9 +7,10 @@ import pandas as pd
 # lg, md, sm is large, medium, small
 
 target_tag = ['PNOUN', 'NOUN', 'PROPN']
-task = 'examine an alarmclock with the desklamp.'
+task = '\n:put two toiletpaper in drawer.'
 weight = 0.5
 THOUGHT_PENALTY = -0.2
+DO_NOTHING_PENALTY = -0.2
 
 class Reward_Compute:
     def __init__(self, obs):
@@ -48,6 +49,9 @@ class Reward_Compute:
         return weight * raw_score
 
     def obs_reward(self, obs):
+        if 'Nothing happens.' in obs:
+            reward = DO_NOTHING_PENALTY
+            return reward
         self.cont_think = 0
         task_noun_list = self.task_noun_list
         obs_noun_list = self.NounOfSentence(obs)
@@ -59,22 +63,34 @@ class Reward_Compute:
     def think_penalty(self, content):
         self.cont_think += 1
         self.total_think += 1
-        reward = THOUGHT_PENALTY * self.cont_think
+        # print('cont', self.cont_think)
+        # print('total', self.total_think)
+        reward = THOUGHT_PENALTY * self.total_think
+        # print('thought penalty', reward)
         think_useful = self.obs_reward(content)
         if(think_useful == 0):
-            reward += THOUGHT_PENALTY * self.cont_think
+            reward += THOUGHT_PENALTY * self.total_think
         else:
             reward += think_useful
+        # print('final thought penalty', reward)
         return reward
 
 if __name__=='__main__':
-    reward_compute = Reward_Compute(task=task)
+    reward_compute = Reward_Compute(obs=task)
     print(f'Task: {task}\n')
 
     print()
-    obs = 'You arrive at loc 8. On the desk 1, you see a pen 1, a bowl 1, a alarmclock 2, a pencil 2, a pencil 3, a creditcard 3, a book 1, a alarmclock 3, a keychain 3, and a book 2.'
-    reward = reward_compute.obs_reward(obs=obs)
-    print(f'Obs: {obs}')
+    think = ' THOUGHT: Let me think...I should first check the nearby drawers to see if they have any toilet paper. Ill check drawers 2, 3, and 4 first.'
+    reward = reward_compute.think_penalty(content=think)
+    print(f'Obs: {think}')
+    print(reward)
+
+    reward_compute = Reward_Compute(obs=task)
+
+    print()
+    think = ' THOUGHT: haha piyan'
+    reward = reward_compute.think_penalty(content=think)
+    print(f'Obs: {think}')
     print(reward)
 
     print()
