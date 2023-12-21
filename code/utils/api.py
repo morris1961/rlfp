@@ -12,7 +12,7 @@ old_settings = {0: 4, 1: 4, 2: 4, 3: 4, 4: 4, 5: 4, 6: 4}
 new_settings = {7: 4, 8: 4, 9: 4, 10: 4}
 vertex_settings = {0: 4, 1: 4, 2: 4, 3: 4, 4: 4}
 # text generation webui api url
-API_URL = "https://smooth-looking-batteries-dual.trycloudflare.com"
+API_URL = "https://xxx-xxx-xxx-xxx.trycloudflare.com"
 
 def llm(prompt, stop=["\n"], model="bardfree", max_tokens=100, temperature=0.0, top_p=1.0):
     messages = [
