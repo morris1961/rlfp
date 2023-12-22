@@ -58,6 +58,28 @@ export PALM_API_KEY=<your key>
     ```bash
     gcloud auth application-default login
     ```
+
+# Checkpoints download
+1. All checkpoints can be downloaded from [here](https://drive.google.com/drive/folders/1YSpcG-8u0Grb_LwUXEW_S6-uWUGbshnK?usp=sharing) and put them into `code/checkpoints/`
+    - 5LLMs : llama2, bardfree, bard, bard2, gemini
+    - 4LLMs : llama2, bardfree, bard, bard2
+    - 3LLMs : 
+2. To use different setting of LLMs to select the best choice, you need to modify some code in following python file (default setting is 5 LLMs)
+    - `eval.py`:
+        ```python
+        ENV_NUM = 12
+        RETRY = 50
+        MYSEED = 0
+        # change the following list to the LLMs you want to use
+        LLM_TYPES = ["llama2", "bardfree", "bard", "bard2", "gemini"]
+        model_name = f'{len(LLM_TYPES)}LLMs'
+        ```
+    - `models/extracters.py` and `models/transformer.py`:
+        ```python
+        # change to the number of LLMs you use
+        LLM_SIZE = 5
+        ```
+
 # Quickstart
 ```bash
 cd code
