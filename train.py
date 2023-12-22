@@ -47,7 +47,7 @@ if __name__ == "__main__":
         
         if i == 0:
             os.makedirs(f'checkpoints/{formatted_time}', exist_ok=True)
-        
+
         model.save(os.path.join(MODEL_PATH, f'{formatted_time}', f'{i}'))
 
     # inference

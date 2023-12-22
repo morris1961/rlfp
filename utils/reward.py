@@ -39,7 +39,6 @@ class Reward_Compute:
                 noun_idx.append(idx)
                 if info.text not in noun_list:
                     noun_list.append(info.text)
-                    # print(info.text, info.pos_)
         
         return noun_list
 
@@ -55,23 +54,18 @@ class Reward_Compute:
         self.cont_think = 0
         task_noun_list = self.task_noun_list
         obs_noun_list = self.NounOfSentence(obs)
-        # print(task_noun_list)
-        # print(obs_noun_list)
         reward = self.union_score(task_list=task_noun_list, obs_list=obs_noun_list)
         return reward
     
     def think_penalty(self, content):
         self.cont_think += 1
         self.total_think += 1
-        # print('cont', self.cont_think)
-        # print('total', self.total_think)
         reward = THOUGHT_PENALTY * self.total_think
-        # print('thought penalty', reward)
         think_useful = self.obs_reward(content)
-        if(think_useful == 0):
-            reward += THOUGHT_PENALTY * self.total_think
-        else:
-            reward += think_useful
+        # if(think_useful == 0):
+            # reward += THOUGHT_PENALTY * self.total_think
+        # else:
+        reward += think_useful
         # print('final thought penalty', reward)
         return reward
 

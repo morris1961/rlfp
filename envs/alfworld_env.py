@@ -36,7 +36,7 @@ Here is an example:\n
 '''
 class ALFWorldEnv(gym.Env):
 
-    def __init__(self, max_attempt, llms, train=False) -> None:
+    def __init__(self, max_attempt, llms, train=True) -> None:
         # load config
         self.config = generic.load_config()
         env_type = self.config['env']['type'] # 'AlfredTWEnv' or 'AlfredThorEnv' or 'AlfredHybrid'
@@ -48,7 +48,11 @@ class ALFWorldEnv(gym.Env):
         self.observation_space = spaces.Dict({"input_ids": spaces.Box(low=0, high=self.tokenizer.vocab_size, shape=(self.llm_size, FEATURE_DIM), dtype=int),
                                               "token_type_ids": spaces.Box(low=0, high=1, shape=(self.llm_size, FEATURE_DIM), dtype=int),
                                               "attention_mask": spaces.Box(low=0, high=1, shape=(self.llm_size, FEATURE_DIM), dtype=int),})
-        self.env = getattr(environment, env_type)(self.config, train_eval='train')   
+        if train:
+            self.env = getattr(environment, env_type)(self.config, train_eval='train') 
+        else:
+            self.env = getattr(environment, env_type)(self.config, train_eval='eval_out_of_distribution') 
+
         self.env = self.env.init_env(batch_size=1)
         self.LLMs = []
         self.max_attempt = max_attempt
