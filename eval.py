@@ -6,7 +6,7 @@ ENV_NUM = 12
 RETRY = 50
 MYSEED = 0
 LLM_TYPES = ["llama2", "bardfree", "bard", "bard2", "gemini"]
-model_name = f'{LLM_TYPES}LLMs'
+model_name = f'{len(LLM_TYPES)}LLMs'
 
 if __name__ == "__main__":
     env = ALFWorldEnv(max_attempt=RETRY, llms=LLM_TYPES, train=False)
