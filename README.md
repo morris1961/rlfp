@@ -63,7 +63,7 @@ export PALM_API_KEY=<your key>
 1. All checkpoints can be downloaded from [here](https://drive.google.com/drive/folders/1YSpcG-8u0Grb_LwUXEW_S6-uWUGbshnK?usp=sharing) and put them into `code/checkpoints/`
     - 5LLMs : llama2, bardfree, bard, bard2, gemini
     - 4LLMs : llama2, bardfree, bard, bard2
-    - 3LLMs : 
+    - 3LLMs : bardfree, bard2, gemini
 2. To use different setting of LLMs to select the best choice, you need to modify some code in following python file (default setting is 5 LLMs)
     - `eval.py`:
         ```python
